@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"kontrol_uyusturan_sis"
+kart_adi = "Uyuşturan Sis"
+aciklama = "Boss'un bu turki hasarını {deger} azaltır."
+mana = 3
+sinif = 3
+tip = 1
+hedef = 0
+etki = 5
+deger = 9
+ek_etki = 0
+ek_deger = 0

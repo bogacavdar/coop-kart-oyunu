@@ -1,10 +1,12 @@
+class_name SavasEkrani
 extends Control
-## Savaş ekranı: masanın ortasında boss, etrafında 4 koltuk.
+## Savaş ekranı: masanın ortasında düşman, etrafında 4 koltuk.
 ## Sen alttaki koltuktasın, diğer 3 sınıfı botlar oynar.
 ## Botlar tur başında planlarını yapar ve koltuklarının altında gösterir,
 ## sen de onlara göre kartlarını seçersin.
 
-const KART_KLASORU := "res://kartlar/veriler"
+signal savas_bitti(motor: SavasMotoru)
+
 const BOSS_MERKEZI := Vector2(640, 285)
 ## Koltukların portre merkezleri: alt (sen), sol, üst, sağ
 const KOLTUK_MERKEZLERI: Array[Vector2] = [
@@ -38,78 +40,28 @@ var _hedef_yazisi: Label
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	size = Vector2(1280, 720)
 	add_child(Masa.new())
-	_sinif_secimi_goster()
 
 
-# --- Sınıf seçimi ----------------------------------------------------------
-
-func _sinif_secimi_goster() -> void:
-	var perde := ColorRect.new()
-	perde.color = Color(0, 0, 0, 0.6)
-	perde.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(perde)
-
-	var orta := CenterContainer.new()
-	orta.set_anchors_preset(Control.PRESET_FULL_RECT)
-	perde.add_child(orta)
-
-	var kutu := VBoxContainer.new()
-	kutu.add_theme_constant_override("separation", 22)
-	orta.add_child(kutu)
-
-	var baslik := _etiket(kutu, 44)
-	baslik.text = "Sınıfını Seç"
-	baslik.add_theme_color_override("font_color", Color("#e8c27a"))
-	var alt := _etiket(kutu, 17)
-	alt.text = "Diğer üç sınıfı bot takım arkadaşların oynayacak."
-
-	var sira := HBoxContainer.new()
-	sira.add_theme_constant_override("separation", 18)
-	kutu.add_child(sira)
-
-	var aciklamalar := {
-		CardData.Sinif.TANK: "Boss'un saldırılarını üstüne çeker, takımı zırhla korur.",
-		CardData.Sinif.DESTEK: "Takımı iyileştirir, kalkan verir.",
-		CardData.Sinif.HASARCI: "Boss'u eritir. Kırılgandır.",
-		CardData.Sinif.KONTROLCU: "Boss'u işaretler, zayıflatır, durdurur.",
-	}
-	for s in [CardData.Sinif.TANK, CardData.Sinif.DESTEK, CardData.Sinif.HASARCI, CardData.Sinif.KONTROLCU]:
-		var renk: Color = CardView.SINIF_RENKLERI[s]
-		var b := Button.new()
-		b.custom_minimum_size = Vector2(230, 190)
-		b.add_theme_stylebox_override("normal", _kutu_stili(renk.darkened(0.7), renk))
-		b.add_theme_stylebox_override("hover", _kutu_stili(renk.darkened(0.5), renk.lightened(0.3)))
-		b.add_theme_stylebox_override("pressed", _kutu_stili(renk.darkened(0.4), Color.GOLD))
-		b.pressed.connect(func():
-			perde.queue_free()
-			_savasi_baslat(s)
-		)
-		sira.add_child(b)
-
-		var ic := VBoxContainer.new()
-		ic.set_anchors_preset(Control.PRESET_FULL_RECT)
-		ic.alignment = BoxContainer.ALIGNMENT_CENTER
-		ic.add_theme_constant_override("separation", 14)
-		ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		b.add_child(ic)
-		var ad := _etiket(ic, 28)
-		ad.text = CardData.sinif_adi(s)
-		ad.add_theme_color_override("font_color", renk.lightened(0.35))
-		var ac := _etiket(ic, 15)
-		ac.text = aciklamalar[s]
-		ac.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		ac.custom_minimum_size = Vector2(200, 0)
-
-
-func _savasi_baslat(sinif: int) -> void:
-	insan = sinif  # oyuncu sırası sınıf sırasıyla aynı
-	motor = SavasMotoru.new(KartHavuzu.yukle(KART_KLASORU))
+## Oyun akışı savaşı buradan başlatır
+func baslat(kurulum: Dictionary, p_insan: int) -> void:
+	insan = p_insan
+	motor = SavasMotoru.new(kurulum)
 	_arayuzu_kur()
-	_log_yaz("[b]Tur 1[/b] başladı. Boss: %s" % motor.boss.ad)
+	_log_yaz("[b]Tur 1[/b] başladı. Rakip: %s" % motor.boss.ad)
 	_botlari_planla()
 	_hepsini_guncelle()
+
+
+## Arayüz testi için: senin yerine bot gibi oynar
+func otomatik_adim() -> void:
+	if motor == null or oynatiliyor or motor.bitti:
+		return
+	var o := motor.oyuncular[insan]
+	if o.hayatta():
+		Bot.planla(motor, o)
+	_turu_oyna()
 
 
 # --- Arayüz kurulumu -------------------------------------------------------
@@ -117,6 +69,7 @@ func _savasi_baslat(sinif: int) -> void:
 func _arayuzu_kur() -> void:
 	_boss = BossGorunumu.new()
 	add_child(_boss)
+	_boss.ayarla(motor.boss.gorunum)
 	_boss.yerlestir(BOSS_MERKEZI)
 
 	_boss_ad = _etiket_at(Rect2(440, 386, 400, 30), 24)
@@ -257,7 +210,8 @@ func _botlari_planla() -> void:
 
 func _hepsini_guncelle() -> void:
 	var b := motor.boss
-	_boss_ad.text = b.ad
+	var unvan := {"elit": "ELİT · ", "boss": "BOSS · "}
+	_boss_ad.text = unvan.get(b.tip, "") + b.ad
 	_boss_bar.max_value = b.max_can
 	_boss_bar.value = b.can
 	_boss_can.text = "Can: %d / %d" % [b.can, b.max_can]
@@ -413,9 +367,17 @@ func _olay_oynat(olay: Dictionary) -> void:
 		"boss_hasar":
 			_boss_bar.value = olay["can"]
 			_boss_can.text = "Can: %d / %d" % [olay["can"], motor.boss.max_can]
+			_boss_durum.text = olay["durum"]
 			_boss.vur()
 			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), BOSS_MERKEZI, 34)
+			if olay["emilen"] > 0:
+				_ucan_yazi("%d kalkana çarptı" % olay["emilen"], Color("#9fc8ff"), BOSS_MERKEZI + Vector2(0, 40), 16)
 			await _bekle(0.35)
+		"boss_iyiles":
+			_boss_bar.value = olay["can"]
+			_boss_can.text = "Can: %d / %d" % [olay["can"], motor.boss.max_can]
+			_ucan_yazi("+%d can" % olay["miktar"], Color("#5aff8a"), BOSS_MERKEZI, 30)
+			await _bekle(0.4)
 		"boss_durum":
 			_boss_durum.text = olay["durum"]
 			_log_yaz("[color=#c38bff]%s[/color]" % olay["metin"])
@@ -449,11 +411,11 @@ func _olay_oynat(olay: Dictionary) -> void:
 		"yeni_tur":
 			_log_yaz("[b]Tur %d[/b] başladı." % motor.tur)
 		"zafer":
-			_log_yaz("[color=#5aff8a][b]Boss yenildi![/b][/color]")
-			_sonuc_goster(true)
+			_log_yaz("[color=#5aff8a][b]%s yenildi![/b][/color]" % motor.boss.ad)
+			await _sonuc_goster(true)
 		"yenilgi":
 			_log_yaz("[color=#ff5a5a][b]Takım düştü.[/b][/color]")
-			_sonuc_goster(false)
+			await _sonuc_goster(false)
 
 
 func _bekle(sure: float) -> void:
@@ -521,34 +483,17 @@ func _sonuc_goster(zafer: bool) -> void:
 	_buton.disabled = true
 	_niyet_kutu.visible = false
 	var perde := ColorRect.new()
-	perde.color = Color(0, 0, 0, 0.75)
-	perde.set_anchors_preset(Control.PRESET_FULL_RECT)
+	perde.color = Color(0, 0, 0, 0.0)
+	perde.size = Vector2(1280, 720)
 	perde.mouse_filter = Control.MOUSE_FILTER_STOP
 	perde.z_index = 300
 	add_child(perde)
-
-	var orta := CenterContainer.new()
-	orta.set_anchors_preset(Control.PRESET_FULL_RECT)
-	perde.add_child(orta)
-
-	var kutu := VBoxContainer.new()
-	kutu.add_theme_constant_override("separation", 20)
-	orta.add_child(kutu)
-
-	var baslik := _etiket(kutu, 60)
-	baslik.text = "ZAFER!" if zafer else "YENİLDİNİZ"
-	baslik.add_theme_color_override("font_color", Color("#5aff8a") if zafer else Color("#ff5a5a"))
-
-	var alt := _etiket(kutu, 20)
-	if zafer:
-		alt.text = "%s %d turda yenildi." % [motor.boss.ad, motor.tur]
-	else:
-		alt.text = "Boss'un kalan canı: %d / %d" % [motor.boss.can, motor.boss.max_can]
-
-	var tekrar := Button.new()
-	tekrar.text = "Yeniden Başla"
-	tekrar.custom_minimum_size = Vector2(220, 54)
-	tekrar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	tekrar.add_theme_font_size_override("font_size", 20)
-	tekrar.pressed.connect(func(): get_tree().reload_current_scene())
-	kutu.add_child(tekrar)
+	var baslik := Arayuz.etiket(perde, 72, "ZAFER!" if zafer else "YENİLDİNİZ",
+		Color("#5aff8a") if zafer else Color("#ff5a5a"))
+	baslik.position = Vector2(0, 300)
+	baslik.size = Vector2(1280, 100)
+	baslik.add_theme_constant_override("outline_size", 10)
+	var tw := perde.create_tween()
+	tw.tween_property(perde, "color:a", 0.6, 0.4)
+	await _bekle(1.8)
+	savas_bitti.emit(motor)

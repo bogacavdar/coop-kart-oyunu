@@ -9,8 +9,6 @@ extends RefCounted
 
 const EL_BOYUTU := 4
 const MAKS_MANA := 6
-const KOPYA_SAYISI := 2
-const BOSS_CANI_OYUNCU_BASI := 85
 
 var oyuncular: Array[Oyuncu] = []
 var boss: Boss
@@ -21,28 +19,29 @@ var aggro := -1
 var rng := RandomNumberGenerator.new()
 
 
-func _init(kart_havuzu: Dictionary) -> void:
+## kurulum: {"oyuncular": [{"sinif", "can", "max_can", "deste"}], "dusman": "id"}
+func _init(kurulum: Dictionary) -> void:
 	rng.randomize()
-	var siniflar: Array[int] = [
-		CardData.Sinif.TANK, CardData.Sinif.DESTEK,
-		CardData.Sinif.HASARCI, CardData.Sinif.KONTROLCU,
-	]
-	var canlar := {
-		CardData.Sinif.TANK: 60,
-		CardData.Sinif.DESTEK: 40,
-		CardData.Sinif.HASARCI: 35,
-		CardData.Sinif.KONTROLCU: 40,
-	}
-	for i in siniflar.size():
-		var sinif := siniflar[i]
-		var o := Oyuncu.new(i, sinif, canlar[sinif])
-		for kart in kart_havuzu.get(sinif, []):
-			for k in KOPYA_SAYISI:
-				o.deste.append(kart.duplicate())
+	var liste: Array = kurulum["oyuncular"]
+	for i in liste.size():
+		var v: Dictionary = liste[i]
+		var o := Oyuncu.new(i, int(v["sinif"]), int(v["max_can"]))
+		o.can = int(v["can"])
+		for kart in v["deste"]:
+			o.deste.append(kart.duplicate())
 		o.deste.shuffle()
 		oyuncular.append(o)
-	boss = Boss.new(BOSS_CANI_OYUNCU_BASI * oyuncular.size())
+	boss = Boss.new(Dusmanlar.tanim(kurulum["dusman"]), oyuncular.size())
 	_tur_baslat()
+
+
+## Testler için: başlangıç desteleriyle, tam canla tek bir savaş kurulumu
+static func hizli_kurulum(havuz: Dictionary, dusman: String = Dusmanlar.BOSS) -> Dictionary:
+	var liste: Array = []
+	for s in Kosu.SINIFLAR:
+		var can: int = Kosu.SINIF_CANLARI[s]
+		liste.append({"sinif": s, "can": can, "max_can": can, "deste": Kosu.baslangic_destesi(havuz, s)})
+	return {"oyuncular": liste, "dusman": dusman}
 
 
 # --- Oyuncu girdileri ------------------------------------------------------
@@ -145,9 +144,7 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 
 	match kart.etki:
 		CardData.Etki.HASAR:
-			var miktar := kart.deger + boss.isaret
-			boss.can = maxi(0, boss.can - miktar)
-			olaylar.append({"tip": "boss_hasar", "miktar": miktar, "can": boss.can})
+			_bossa_vur(kart.deger + boss.isaret, olaylar)
 
 		CardData.Etki.ISARET:
 			boss.isaret += kart.deger
@@ -177,6 +174,34 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 				var iyilesen := t.iyiles(kart.deger)
 				_oyuncu_olayi(olaylar, "iyilestir", t, iyilesen)
 
+	if boss.can <= 0:
+		return
+	var ek := kart.ek_deger
+	match kart.ek_etki:
+		CardData.EkEtki.KENDINE_ZIRH:
+			o.zirh += ek
+			_oyuncu_olayi(olaylar, "zirh", o, ek)
+		CardData.EkEtki.TAKIMA_ZIRH:
+			for t in canli_oyuncular():
+				t.zirh += ek
+				_oyuncu_olayi(olaylar, "zirh", t, ek)
+		CardData.EkEtki.KENDINE_CAN:
+			_oyuncu_olayi(olaylar, "iyilestir", o, o.iyiles(ek))
+		CardData.EkEtki.TAKIMA_CAN:
+			for t in canli_oyuncular():
+				_oyuncu_olayi(olaylar, "iyilestir", t, t.iyiles(ek))
+		CardData.EkEtki.BOSSA_HASAR:
+			_bossa_vur(ek, olaylar)
+
+
+## Boss'a hasar: önce kalkanı emer
+func _bossa_vur(miktar: int, olaylar: Array[Dictionary]) -> void:
+	var emilen := mini(boss.zirh, miktar)
+	boss.zirh -= emilen
+	var net := miktar - emilen
+	boss.can = maxi(0, boss.can - net)
+	olaylar.append({"tip": "boss_hasar", "miktar": net, "emilen": emilen, "can": boss.can, "durum": boss.durum_metni()})
+
 
 func _hedefler(o: Oyuncu, kart: CardData, hedef_no: int) -> Array[Oyuncu]:
 	var liste: Array[Oyuncu] = []
@@ -193,29 +218,45 @@ func _hedefler(o: Oyuncu, kart: CardData, hedef_no: int) -> Array[Oyuncu]:
 
 func _boss_hamlesi(olaylar: Array[Dictionary]) -> void:
 	var n := boss.niyet
+	boss.zirh = 0  # önceki turun kalkanı biter
 	if boss.sersem:
-		olaylar.append({"tip": "boss_hamle", "metin": "%s sersem, bu tur saldıramadı!" % boss.ad})
+		olaylar.append({"tip": "boss_hamle", "metin": "%s sersem, bu tur bir şey yapamadı!" % boss.ad})
 		return
 
+	var hasar := maxi(0, int(n.get("hasar", 0)) - boss.zayiflik)
 	match n.get("tur", ""):
 		"tekil":
 			var hedef_no: int = n["hedef"]
 			var metin: String = n["metin"]
 			if aggro >= 0 and oyuncular[aggro].hayatta() and aggro != hedef_no:
 				hedef_no = aggro
-				metin += " (Tank'a yöneldi!)" if oyuncular[aggro].sinif == CardData.Sinif.TANK else " (yön değiştirdi!)"
+				metin += " (%s üstüne çekti!)" % oyuncular[aggro].ad
 			if not oyuncular[hedef_no].hayatta():
 				hedef_no = canli_oyuncular().pick_random().no
 			olaylar.append({"tip": "boss_hamle", "metin": metin})
-			_oyuncuya_vur(hedef_no, maxi(0, int(n["hasar"]) - boss.zayiflik), olaylar)
+			_oyuncuya_vur(hedef_no, hasar, olaylar)
+		"cift":
+			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
+			for no in n["hedefler"]:
+				if oyuncular[no].hayatta():
+					_oyuncuya_vur(no, hasar, olaylar)
 		"alan":
 			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
 			for o in canli_oyuncular():
-				_oyuncuya_vur(o.no, maxi(0, int(n["hasar"]) - boss.zayiflik), olaylar)
+				_oyuncuya_vur(o.no, hasar, olaylar)
 		"guc":
-			boss.guc += 3
+			boss.guc += int(n["miktar"])
 			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
-			_boss_durum_olayi(olaylar, "Boss güçlendi")
+			_boss_durum_olayi(olaylar, "%s güçlendi" % boss.ad)
+		"kalkan":
+			boss.zirh += int(n["miktar"])
+			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
+			_boss_durum_olayi(olaylar, "%s kalkan kazandı" % boss.ad)
+		"iyiles":
+			var once := boss.can
+			boss.can = mini(boss.max_can, boss.can + int(n["miktar"]))
+			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
+			olaylar.append({"tip": "boss_iyiles", "miktar": boss.can - once, "can": boss.can})
 
 
 func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary]) -> void:
@@ -239,7 +280,7 @@ func _tur_baslat() -> void:
 	aggro = -1
 	# Savaş uzadıkça boss sertleşir
 	if tur > 1 and tur % 2 == 1:
-		boss.guc += 3
+		boss.guc += boss.guc_artisi
 	for o in oyuncular:
 		o.zirh = 0
 		o.mana = mini(tur, MAKS_MANA)
@@ -252,23 +293,57 @@ func _niyet_belirle() -> void:
 	var canlilar := canli_oyuncular()
 	if canlilar.is_empty():
 		return
-	var hedef: Oyuncu = canlilar[rng.randi_range(0, canlilar.size() - 1)]
-	var zar := rng.randi_range(1, 100)
-	var h := 0
-	if zar <= 45 or tur == 1:
-		h = 27 + boss.guc
-		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
-			"metin": "Kuyruklu Yıldız -> %s (%d hasar)" % [hedef.ad, h]}
-	elif zar <= 65:
-		h = 40 + boss.guc
-		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
-			"metin": "Kara Delik -> %s (%d hasar)" % [hedef.ad, h]}
-	elif zar <= 90:
-		h = 15 + int(boss.guc / 2.0)
-		boss.niyet = {"tur": "alan", "hasar": h,
-			"metin": "Satürn Halkası -> Tüm takım (%d hasar)" % h}
-	else:
-		boss.niyet = {"tur": "guc", "metin": "Güç Topluyor (+3 güç)"}
+	# Ağırlıklı rastgele hamle seçimi
+	var adaylar: Array = []
+	var toplam := 0
+	for h in boss.hamleler:
+		if tur == 1 and h.get("ilk_tur_yok", false):
+			continue
+		adaylar.append(h)
+		toplam += int(h["agirlik"])
+	var secilen: Dictionary = adaylar[0]
+	var zar := rng.randi_range(1, toplam)
+	for h in adaylar:
+		zar -= int(h["agirlik"])
+		if zar <= 0:
+			secilen = h
+			break
+
+	var ad: String = secilen["ad"]
+	var n := {"tur": secilen["tur"]}
+	match secilen["tur"]:
+		"tekil":
+			var hedef: Oyuncu = canlilar[rng.randi_range(0, canlilar.size() - 1)]
+			var h := int(secilen["hasar"]) + boss.guc
+			n["hedef"] = hedef.no
+			n["hasar"] = h
+			n["metin"] = "%s -> %s (%d hasar)" % [ad, hedef.ad, h]
+		"cift":
+			var karisik := canlilar.duplicate()
+			karisik.shuffle()
+			var hedefler: Array[int] = []
+			var adlar: PackedStringArray = []
+			for o in karisik.slice(0, 2):
+				hedefler.append(o.no)
+				adlar.append(o.ad)
+			var h := int(secilen["hasar"]) + boss.guc
+			n["hedefler"] = hedefler
+			n["hasar"] = h
+			n["metin"] = "%s -> %s (her birine %d hasar)" % [ad, " ve ".join(adlar), h]
+		"alan":
+			var h := int(secilen["hasar"]) + int(boss.guc / 2.0)
+			n["hasar"] = h
+			n["metin"] = "%s -> Tüm takım (%d hasar)" % [ad, h]
+		"guc":
+			n["miktar"] = int(secilen["miktar"])
+			n["metin"] = "%s (+%d güç)" % [ad, n["miktar"]]
+		"kalkan":
+			n["miktar"] = int(secilen["miktar"]) + boss.guc
+			n["metin"] = "%s (+%d kalkan)" % [ad, n["miktar"]]
+		"iyiles":
+			n["miktar"] = int(secilen["miktar"])
+			n["metin"] = "%s (+%d can)" % [ad, n["miktar"]]
+	boss.niyet = n
 
 
 # --- Olay yardımcıları -----------------------------------------------------

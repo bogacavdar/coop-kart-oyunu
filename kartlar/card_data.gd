@@ -14,6 +14,9 @@ enum Hedef { BOSS, MUTTEFIK, KENDISI, TUM_TAKIM }
 ## Kartın ne yaptığı
 enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET }
 
+## Ana etkiden sonra uygulanan ikinci etki (isteğe bağlı)
+enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HASAR }
+
 @export var id: StringName
 @export var kart_adi: String = "Yeni Kart"
 ## Açıklamada {deger} yazarsan, kartın değeriyle otomatik değişir.
@@ -25,12 +28,34 @@ enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET }
 @export var etki: Etki = Etki.HASAR
 ## Hasar, heal, zırh miktarı vb.
 @export var deger: int = 0
+## İkinci etki ve değeri. Açıklamada {ek} yazarsan ek değerle değişir.
+@export var ek_etki: EkEtki = EkEtki.YOK
+@export var ek_deger: int = 0
+## Başlangıç destesinde mi? (değilse ödül olarak çıkar)
+@export var baslangic := false
 ## ComfyUI'dan gelen görsel
 @export var gorsel: Texture2D
 
 
 func aciklama_metni() -> String:
-	return aciklama.format({"deger": deger})
+	return aciklama.format({"deger": deger, "ek": ek_deger})
+
+
+func guclendirildi_mi() -> bool:
+	return kart_adi.ends_with("+")
+
+
+## Kartın güçlendirilmiş kopyasını döndürür (adı "+" ile biter)
+func guclendirilmis() -> CardData:
+	var k: CardData = duplicate()
+	k.kart_adi = kart_adi + "+"
+	if deger > 0:
+		k.deger = deger + maxi(2, ceili(deger * 0.35))
+	if ek_deger > 0:
+		k.ek_deger = ek_deger + maxi(1, ceili(ek_deger * 0.35))
+	if deger == 0:
+		k.mana = maxi(0, mana - 1)
+	return k
 
 
 static func tip_adi(t: Tip) -> String:

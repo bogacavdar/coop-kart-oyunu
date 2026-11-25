@@ -18,7 +18,7 @@ static func planla(motor: SavasMotoru, o: Oyuncu) -> void:
 			if o.secili_mi(kart) or kart.mana > kalan:
 				continue
 			var sonuc := _degerlendir(motor, o, kart)
-			var puan: float = float(sonuc[0]) / (kart.mana + 1.0)
+			var puan: float = (float(sonuc[0]) + _ek_puan(motor, o, kart)) / (kart.mana + 1.0)
 			if puan > en_iyi_puan:
 				en_iyi_puan = puan
 				en_iyi = kart
@@ -36,11 +36,12 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 	var niyet_hasar: int = niyet.get("hasar", 0)
 	var niyet_hedef: int = niyet.get("hedef", -1)
 	var canlilar := motor.canli_oyuncular()
-	var etkilenen := 0
-	if niyet_tur == "alan":
-		etkilenen = canlilar.size()
-	elif niyet_tur == "tekil":
-		etkilenen = 1
+	var niyet_hedefleri: Array = niyet.get("hedefler", [])
+	if niyet_tur == "tekil":
+		niyet_hedefleri = [niyet_hedef]
+	elif niyet_tur == "alan":
+		niyet_hedefleri = canlilar.map(func(c): return c.no)
+	var etkilenen := niyet_hedefleri.size()
 
 	match kart.etki:
 		CardData.Etki.HASAR:
@@ -64,12 +65,12 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 
 		CardData.Etki.ZIRH:
 			if kart.hedef == CardData.Hedef.TUM_TAKIM:
-				return [kart.deger * canlilar.size() * (1.0 if niyet_tur == "alan" else 0.25), -1]
+				return [kart.deger * (etkilenen + canlilar.size() * 0.2), -1]
 			var hedef_no := o.no
 			if kart.hedef == CardData.Hedef.MUTTEFIK and niyet_tur == "tekil" \
 					and niyet_hedef >= 0 and motor.oyuncular[niyet_hedef].hayatta():
 				hedef_no = niyet_hedef
-			var tehdit := niyet_tur == "alan" or (niyet_tur == "tekil" and niyet_hedef == hedef_no)
+			var tehdit := niyet_hedefleri.has(hedef_no)
 			var hedef_param := hedef_no if kart.hedef == CardData.Hedef.MUTTEFIK else -1
 			return [kart.deger * (1.1 if tehdit else 0.3), hedef_param]
 
@@ -89,3 +90,23 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 			return [mini(kart.deger, eksik) * 1.2, hedef_param]
 
 	return [0.0, -1]
+
+
+## İkinci etkinin kabaca değeri
+static func _ek_puan(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> float:
+	var ek := kart.ek_deger
+	match kart.ek_etki:
+		CardData.EkEtki.KENDINE_ZIRH:
+			return ek * 0.6
+		CardData.EkEtki.TAKIMA_ZIRH:
+			return ek * motor.canli_oyuncular().size() * 0.5
+		CardData.EkEtki.KENDINE_CAN:
+			return mini(ek, o.max_can - o.can) * 1.0
+		CardData.EkEtki.TAKIMA_CAN:
+			var toplam := 0
+			for c in motor.canli_oyuncular():
+				toplam += mini(ek, c.max_can - c.can)
+			return float(toplam)
+		CardData.EkEtki.BOSSA_HASAR:
+			return float(ek)
+	return 0.0

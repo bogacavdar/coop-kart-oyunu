@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"destek_kutsal_isin"
+kart_adi = "Kutsal Işın"
+aciklama = "Boss'a {deger} hasar verir ve {ek} can iyileşir."
+mana = 2
+sinif = 1
+tip = 2
+hedef = 0
+etki = 0
+deger = 6
+ek_etki = 3
+ek_deger = 4

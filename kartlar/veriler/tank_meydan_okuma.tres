@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"tank_meydan_okuma"
+kart_adi = "Meydan Okuma"
+aciklama = "Boss'un tekil saldırısını üstüne çeker ve {deger} zırh kazanır."
+mana = 3
+sinif = 0
+tip = 0
+hedef = 2
+etki = 3
+deger = 14
+ek_etki = 0
+ek_deger = 0

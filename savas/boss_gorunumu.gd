@@ -6,6 +6,9 @@ extends Control
 const BOYUT := Vector2(360, 240)
 
 var yaricap := 92.0
+var ana_renk := Color("#2e1533")
+var goz_renk := Color("#ffa040")
+var halka := true
 var gorsel: Texture2D
 var _zaman := 0.0
 var _temel_konum := Vector2.ZERO
@@ -16,6 +19,14 @@ func _init() -> void:
 	size = BOYUT
 	pivot_offset = BOYUT / 2.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+## Düşman tanımındaki görünüm ayarlarını uygular
+func ayarla(g: Dictionary) -> void:
+	ana_renk = Color(str(g.get("renk", "#2e1533")))
+	goz_renk = Color(str(g.get("goz", "#ffa040")))
+	halka = bool(g.get("halka", true))
+	yaricap = float(g.get("yaricap", 92.0))
 
 
 func yerlestir(merkez: Vector2) -> void:
@@ -34,27 +45,34 @@ func _draw() -> void:
 
 	# Dış parıltı
 	for i in 8:
-		draw_circle(m, yaricap + 46 - i * 6, Color(0.75, 0.25, 0.5, 0.035 + 0.02 * nabiz))
+		var parilti := ana_renk.lightened(0.5)
+		parilti.a = 0.035 + 0.02 * nabiz
+		draw_circle(m, yaricap + 46 - i * 6, parilti)
 
 	# Halkanın arka yarısı (gezegenin arkasında kalır)
-	_halka(m, PI, TAU)
+	if halka:
+		_halka(m, PI, TAU)
 
 	if gorsel:
 		draw_texture_rect(gorsel, Rect2(m - Vector2(yaricap, yaricap), Vector2(yaricap, yaricap) * 2), false)
 	else:
-		draw_circle(m, yaricap, Color("#2e1533"))
-		draw_circle(m + Vector2(-14, -18), yaricap * 0.8, Color("#3f1d45"))
-		draw_circle(m + Vector2(-28, -34), yaricap * 0.5, Color("#52275a"))
-		draw_circle(m + Vector2(-38, -46), yaricap * 0.2, Color("#6a3672"))
+		var o := yaricap / 92.0
+		draw_circle(m, yaricap, ana_renk)
+		draw_circle(m + Vector2(-14, -18) * o, yaricap * 0.8, ana_renk.lightened(0.08))
+		draw_circle(m + Vector2(-28, -34) * o, yaricap * 0.5, ana_renk.lightened(0.16))
+		draw_circle(m + Vector2(-38, -46) * o, yaricap * 0.2, ana_renk.lightened(0.26))
 		# Gözler
+		var hale := goz_renk
+		hale.a = 0.35
 		for dx in [-30.0, 30.0]:
-			var g := m + Vector2(dx, 4)
-			draw_circle(g, 13 + 3 * nabiz, Color(1, 0.45, 0.15, 0.35))
-			draw_circle(g, 8, Color(1, 0.6, 0.2))
-			draw_circle(g, 3.5, Color(1, 0.95, 0.75))
+			var g := m + Vector2(dx, 4) * o
+			draw_circle(g, (13 + 3 * nabiz) * o, hale)
+			draw_circle(g, 8 * o, goz_renk)
+			draw_circle(g, 3.5 * o, goz_renk.lightened(0.7))
 
 	# Halkanın ön yarısı
-	_halka(m, 0, PI)
+	if halka:
+		_halka(m, 0, PI)
 
 
 func _halka(m: Vector2, bas: float, son: float) -> void:

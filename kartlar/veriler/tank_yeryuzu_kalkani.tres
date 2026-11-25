@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"tank_yeryuzu_kalkani"
+kart_adi = "Yeryüzü Kalkanı"
+aciklama = "Bir müttefike {deger} zırh verir."
+mana = 3
+sinif = 0
+tip = 0
+hedef = 1
+etki = 2
+deger = 15
+ek_etki = 0
+ek_deger = 0

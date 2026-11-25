@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"tank_dikenli_kalkan"
+kart_adi = "Dikenli Kalkan"
+aciklama = "{deger} zırh kazanır ve boss'a {ek} hasar verir."
+mana = 2
+sinif = 0
+tip = 0
+hedef = 2
+etki = 2
+deger = 7
+ek_etki = 5
+ek_deger = 4

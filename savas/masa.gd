@@ -7,9 +7,12 @@ const MERKEZ := Vector2(640, 320)
 const YARICAP := Vector2(590, 285)
 
 var _yildizlar: Array[Vector3] = []  # x, y, boyut
+## false ise sadece yıldızlı gökyüzü çizilir (harita, ödül ekranları)
+var masa_ciz := true
 
 
-func _init() -> void:
+func _init(p_masa_ciz: bool = true) -> void:
+	masa_ciz = p_masa_ciz
 	size = Vector2(1280, 720)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var rng := RandomNumberGenerator.new()
@@ -23,6 +26,8 @@ func _draw() -> void:
 	for y in _yildizlar:
 		draw_circle(Vector2(y.x, y.y), y.z, Color(1, 1, 1, 0.15 + y.z * 0.2))
 
+	if not masa_ciz:
+		return
 	# Masa: gölge, altın kenar, kadife yüzey, iç halka
 	_elips(MERKEZ + Vector2(0, 14), YARICAP + Vector2(18, 18), Color(0, 0, 0, 0.5))
 	_elips(MERKEZ, YARICAP + Vector2(16, 16), Color("#b08d3c"))

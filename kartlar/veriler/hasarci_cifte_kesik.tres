@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"hasarci_cifte_kesik"
+kart_adi = "Çifte Kesik"
+aciklama = "Boss'a {deger} hasar verir."
+mana = 1
+sinif = 2
+tip = 2
+hedef = 0
+etki = 0
+deger = 7
+ek_etki = 0
+ek_deger = 0
