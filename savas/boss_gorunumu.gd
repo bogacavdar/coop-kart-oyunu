@@ -11,6 +11,8 @@ var sekil := "ejder"
 var ana_renk := Color("#7a1c14")
 var goz_renk := Color("#ffd040")
 var gorsel: Texture2D
+## game-icons.net'ten düşman ikonu (varliklar/ikonlar/dusman_<sekil>.svg)
+var ikon: Texture2D
 var _zaman := 0.0
 var _nabiz := 0.0
 var _temel_konum := Vector2.ZERO
@@ -29,6 +31,8 @@ func ayarla(g: Dictionary) -> void:
 	ana_renk = Color(str(g.get("renk", "#7a1c14")))
 	goz_renk = Color(str(g.get("goz", "#ffd040")))
 	yaricap = float(g.get("yaricap", 92.0))
+	var yol := "res://varliklar/ikonlar/dusman_%s.svg" % sekil
+	ikon = load(yol) if ResourceLoader.exists(yol) else null
 
 
 func yerlestir(merkez: Vector2) -> void:
@@ -52,6 +56,17 @@ func _draw() -> void:
 	if gorsel:
 		var r := Vector2(yaricap, yaricap) * 1.2
 		draw_texture_rect(gorsel, Rect2(BOYUT / 2.0 - r, r * 2), false)
+		return
+
+	if ikon:
+		var r := Vector2(yaricap, yaricap) * 1.25
+		var alan := Rect2(BOYUT / 2.0 - r, r * 2)
+		var zemin := ana_renk.darkened(0.55)
+		zemin.a = 0.85
+		draw_circle(BOYUT / 2.0, yaricap * 1.05, zemin)
+		draw_arc(BOYUT / 2.0, yaricap * 1.05, 0, TAU, 64, goz_renk.darkened(0.2), 3.0)
+		draw_texture_rect(ikon, Rect2(alan.position + Vector2(5, 7), alan.size), false, Color(0, 0, 0, 0.55))
+		draw_texture_rect(ikon, alan, false, ana_renk.lightened(0.55))
 		return
 
 	match sekil:

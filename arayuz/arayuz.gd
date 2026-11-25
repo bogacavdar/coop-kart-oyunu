@@ -43,7 +43,7 @@ static func buton(metin: String, boyut: Vector2, renk: Color = Color("#5c4720"),
 
 
 ## Başlık + açıklama içeren büyük seçim butonu
-static func secenek_butonu(baslik: String, aciklama: String, renk: Color, boyut: Vector2) -> Button:
+static func secenek_butonu(baslik: String, aciklama: String, renk: Color, boyut: Vector2, ikon: Texture2D = null) -> Button:
 	var b := buton("", boyut, renk.darkened(0.65), renk)
 	var ic := VBoxContainer.new()
 	ic.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -51,6 +51,15 @@ static func secenek_butonu(baslik: String, aciklama: String, renk: Color, boyut:
 	ic.add_theme_constant_override("separation", 10)
 	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(ic)
+	if ikon:
+		var t := TextureRect.new()
+		t.texture = ikon
+		t.custom_minimum_size = Vector2(0, 64)
+		t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		t.self_modulate = renk.lightened(0.45)
+		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ic.add_child(t)
 	etiket(ic, 24, baslik, renk.lightened(0.4))
 	var ac := etiket(ic, 15, aciklama, Color("#e0d8f0"))
 	ac.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

@@ -13,6 +13,7 @@ var yatay: bool
 var _portre: Panel
 var _portre_stil: StyleBoxFlat
 var _harf: Label
+var _ikon: TextureRect
 var _ad: Label
 var _bar: ProgressBar
 var _deger: Label
@@ -52,6 +53,15 @@ func _init(p_no: int, p_renk: Color, p_yatay: bool) -> void:
 	_harf.add_theme_color_override("font_color", renk.lightened(0.4))
 	_harf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_portre.add_child(_harf)
+
+	_ikon = TextureRect.new()
+	_ikon.position = Vector2(13, 13)
+	_ikon.size = Vector2(PORTRE - 26, PORTRE - 26)
+	_ikon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_ikon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_ikon.self_modulate = renk.lightened(0.45)
+	_ikon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portre.add_child(_ikon)
 
 	var x0 := PORTRE + 12.0 if yatay else 0.0
 	var y0 := 2.0 if yatay else PORTRE + 4.0
@@ -119,7 +129,11 @@ func portre_merkezi() -> Vector2:
 
 
 func guncelle(o: Oyuncu, sen: bool, hedef_modu: bool, plan: String) -> void:
-	_harf.text = o.ad.substr(0, 1)
+	if _ikon.texture == null:
+		var yol := "res://varliklar/ikonlar/sinif_%d.svg" % o.sinif
+		if ResourceLoader.exists(yol):
+			_ikon.texture = load(yol)
+	_harf.text = "" if _ikon.texture else o.ad.substr(0, 1)
 	_ad.text = o.ad + (" (Sen)" if sen else " (Bot)")
 	_mana_metni = "Mana %d/%d" % [o.kalan_mana(), o.mana]
 	degerleri_goster(o.can, o.max_can, o.zirh)

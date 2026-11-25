@@ -31,6 +31,7 @@ var temel_z := 0
 var yukselme := 0.0
 
 var _frame_style: StyleBoxFlat
+var _art_zemin: StyleBoxFlat
 var _art: TextureRect
 var _name_label: Label
 var _type_label: Label
@@ -90,7 +91,17 @@ func _build() -> void:
 	_name_label = _make_label(Vector2(12, 8), Vector2(176, 28), 16)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
-	# Görsel alanı
+	# Görsel alanı: arkasında sınıf renginde bir zemin
+	var zemin := Panel.new()
+	zemin.position = Vector2(12, 40)
+	zemin.size = Vector2(176, 130)
+	zemin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_art_zemin = StyleBoxFlat.new()
+	_art_zemin.set_corner_radius_all(8)
+	_art_zemin.bg_color = Color("#2a2540")
+	zemin.add_theme_stylebox_override("panel", _art_zemin)
+	add_child(zemin)
+
 	_art = TextureRect.new()
 	_art.position = Vector2(12, 40)
 	_art.size = Vector2(176, 130)
@@ -150,7 +161,23 @@ func _refresh() -> void:
 	_mana_label.text = str(data.mana)
 	_type_label.text = "%s · %s" % [CardData.sinif_adi(data.sinif), CardData.tip_adi(data.tip)]
 	_desc_label.text = data.aciklama_metni()
-	_art.texture = data.gorsel
+	var renk := _sinif_rengi()
+	_art_zemin.bg_color = renk.darkened(0.62)
+	_art_zemin.border_color = renk.darkened(0.2)
+	_art_zemin.set_border_width_all(2)
+	_art.texture = data.resim()
+	if data.gorsel:
+		# Gerçek çizim: alanı doldur, renklendirme yok
+		_art.position = Vector2(12, 40)
+		_art.size = Vector2(176, 130)
+		_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_art.self_modulate = Color.WHITE
+	else:
+		# İkon: ortada, sınıf rengine boyanmış
+		_art.position = Vector2(42, 48)
+		_art.size = Vector2(116, 114)
+		_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_art.self_modulate = renk.lightened(0.45)
 	set_secili(secili)
 
 

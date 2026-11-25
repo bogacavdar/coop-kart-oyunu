@@ -55,10 +55,38 @@ func _sinif_secimi_goster() -> void:
 	for i in Kosu.SINIFLAR.size():
 		var s := Kosu.SINIFLAR[i]
 		var renk: Color = CardView.SINIF_RENKLERI[s]
-		var btn := Arayuz.secenek_butonu(CardData.sinif_adi(s), aciklamalar[s], renk, Vector2(240, 200))
-		btn.position = Vector2(120 + i * 270, 290)
+		var ikon_yolu := "res://varliklar/ikonlar/sinif_%d.svg" % s
+		var ikon: Texture2D = load(ikon_yolu) if ResourceLoader.exists(ikon_yolu) else null
+		var btn := Arayuz.secenek_butonu(CardData.sinif_adi(s), aciklamalar[s], renk, Vector2(240, 250), ikon)
+		btn.position = Vector2(120 + i * 270, 270)
 		btn.pressed.connect(_kosu_baslat.bind(s))
 		ekran.add_child(btn)
+
+
+	var krediler := Arayuz.buton("Krediler", Vector2(160, 44), Color("#2a2450"), Color("#7a6fd0"), 16)
+	krediler.position = Vector2(560, 600)
+	krediler.pressed.connect(_kredileri_goster)
+	ekran.add_child(krediler)
+
+
+func _kredileri_goster() -> void:
+	var perde := ColorRect.new()
+	perde.color = Color(0.02, 0.01, 0.06, 0.95)
+	perde.size = size
+	perde.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(perde)
+	var b := Arayuz.etiket(perde, 34, "Krediler", Arayuz.ALTIN)
+	b.position = Vector2(0, 90)
+	b.size = Vector2(1280, 44)
+	var metin := FileAccess.get_file_as_string("res://KREDILER.txt")
+	var l := Arayuz.etiket(perde, 16, metin, Color("#e0d8f0"))
+	l.position = Vector2(190, 160)
+	l.size = Vector2(900, 400)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var kapat := Arayuz.buton("Kapat", Vector2(180, 48))
+	kapat.position = Vector2(550, 600)
+	kapat.pressed.connect(perde.queue_free)
+	perde.add_child(kapat)
 
 
 func _kosu_baslat(sinif: int) -> void:

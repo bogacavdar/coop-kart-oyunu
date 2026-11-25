@@ -1,0 +1,10 @@
+Oyun: Boğaç
+
+İkonlar: game-icons.net (CC BY 3.0, https://creativecommons.org/licenses/by/3.0/)
+- Lorc (lorcblog.blogspot.com)
+- Delapouite (delapouite.com)
+- Sbed (opengameart.org/content/95-game-icons)
+- Cathelineau
+- Skoll
+
+Oyun motoru: Godot Engine (MIT lisansı, godotengine.org)

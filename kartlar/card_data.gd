@@ -37,6 +37,16 @@ enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HAS
 @export var gorsel: Texture2D
 
 
+## Kartın görseli: elle verilmiş bir görsel varsa o, yoksa varliklar/ikonlar/<id>.svg
+func resim() -> Texture2D:
+	if gorsel:
+		return gorsel
+	var yol := "res://varliklar/ikonlar/%s.svg" % id
+	if ResourceLoader.exists(yol):
+		return load(yol)
+	return null
+
+
 func aciklama_metni() -> String:
 	return aciklama.format({"deger": deger, "ek": ek_deger})
 
