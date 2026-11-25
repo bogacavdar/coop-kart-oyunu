@@ -23,6 +23,9 @@ func _initialize() -> void:
 		_dusman_raporu(havuz, d)
 	_tilsim_raporu(havuz)
 	_kosu_raporu(havuz)
+	_kosu_raporu(havuz, 5, 80)
+	_kosu_raporu(havuz, 10, 80)
+	_kayit_testi()
 	print("TEST TAMAM")
 	quit()
 
@@ -93,12 +96,12 @@ func _botlarla_oyna(motor: SavasMotoru) -> void:
 
 
 ## Bütün koşuyu 4 botla baştan sona oynatır
-func _kosu_raporu(havuz: Dictionary) -> void:
+func _kosu_raporu(havuz: Dictionary, kademe: int = 0, sayi: int = 150) -> void:
 	var kazanilan := 0
 	var toplam_tilsim := 0
 	var olum_katmani := {}
-	for i in 150:
-		var kosu := Kosu.new(havuz, -1)
+	for i in sayi:
+		var kosu := Kosu.new(havuz, -1, kademe)
 		kosu.tilsim_ekle(kosu.tilsim_secenekleri().pick_random())
 		var adim := 0
 		while not kosu.bitti and adim < 20:
@@ -140,8 +143,8 @@ func _kosu_raporu(havuz: Dictionary) -> void:
 			for k in v["deste"]:
 				if not (k is CardData):
 					push_error("TEST HATASI: destede geçersiz kart")
-	print("TEST: KOŞU 4 bot %d/150 kazandı; ort. %.1f tılsım; düşülen katmanlar: %s" % [
-		kazanilan, toplam_tilsim / 150.0, str(olum_katmani)])
+	print("TEST: KOŞU kademe %d -> 4 bot %d/%d kazandı; ort. %.1f tılsım; düşülen katmanlar: %s" % [
+		kademe, kazanilan, sayi, toplam_tilsim / float(sayi), str(olum_katmani)])
 
 
 ## Bütün tılsımlar açıkken boss savaşı: hata çıkıyor mu, ne kadar güçlendiriyor?
@@ -157,3 +160,25 @@ func _tilsim_raporu(havuz: Dictionary) -> void:
 		if motor.boss.can <= 0:
 			zafer += 1
 	print("TEST: bütün tılsımlarla boss -> 4 bot %d/100" % zafer)
+
+
+## Kalıcı ilerleme: kademe açma ve kilitler doğru işliyor mu? (dosyaya yazmadan)
+func _kayit_testi() -> void:
+	var k := Kayit.new()
+	if k.kilitli_idler().size() != Kayit.KILIT_SIRASI.size():
+		push_error("TEST HATASI: başta her şey kilitli olmalı")
+	var s := k.kosu_bitti(false, 0, 3, false)
+	if s["yeni_kademe"] != -1 or not s["acilanlar"].is_empty():
+		push_error("TEST HATASI: kaybedilen 3 savaşlık koşu bir şey açmamalı")
+	s = k.kosu_bitti(true, 0, 6, false)
+	if s["yeni_kademe"] != 1 or s["acilanlar"].size() != 2 or k.deger("acik_kademe") != 1:
+		push_error("TEST HATASI: zafer kademe 1'i ve 2 kilidi açmalıydı: %s" % str(s))
+	var kosu := Kosu.new(KartHavuzu.yukle("res://kartlar/veriler"), -1, 0, k.kilitli_idler())
+	for i in 30:
+		for kart in kosu.odul_secenekleri(CardData.Sinif.HASARCI):
+			if k.kilitli_idler().has(String(kart.id)):
+				push_error("TEST HATASI: kilitli kart ödül olarak çıktı: " + kart.kart_adi)
+		for t in kosu.tilsim_secenekleri():
+			if k.kilitli_idler().has(t):
+				push_error("TEST HATASI: kilitli tılsım çıktı: " + t)
+	print("TEST: kayıt ve kilit testi bitti (%d kilit açık)" % k.deger("acilan"))

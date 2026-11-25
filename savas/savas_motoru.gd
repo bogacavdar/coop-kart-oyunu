@@ -21,12 +21,18 @@ var rng := RandomNumberGenerator.new()
 var tilsimlar: Array = []
 var baslangic_mesajlari: PackedStringArray = []
 var el_boyutu := EL_BOYUTU
+## Zorluk kademesi (Kademe sınıfına bakınız)
+var kademe := 0
+var hasar_carpani := 1.0
 
 
 ## kurulum: {"oyuncular": [{"sinif", "can", "max_can", "deste"}], "dusman": "id"}
 func _init(kurulum: Dictionary) -> void:
 	rng.randomize()
 	tilsimlar = kurulum.get("tilsimlar", [])
+	kademe = int(kurulum.get("kademe", 0))
+	if kademe >= 2:
+		hasar_carpani = 1.1
 	if tilsimlar.has("bilge_kitabi"):
 		el_boyutu = EL_BOYUTU + 1
 	var liste: Array = kurulum["oyuncular"]
@@ -39,8 +45,29 @@ func _init(kurulum: Dictionary) -> void:
 		o.deste.shuffle()
 		oyuncular.append(o)
 	boss = Boss.new(Dusmanlar.tanim(kurulum["dusman"]), oyuncular.size())
+	_kademe_uygula()
 	_tur_baslat()
 	_savas_basi_tilsimlari()
+
+
+func _kademe_uygula() -> void:
+	if kademe >= 1 and boss.tip == "elit":
+		_boss_canini_carp(1.2)
+	if kademe >= 4:
+		boss.guc += 1
+	if kademe >= 5 and boss.tip == "boss":
+		_boss_canini_carp(1.15)
+	if kademe >= 8 and boss.tip != "normal":
+		boss.guc += 2
+	if kademe >= 9 and boss.tip == "normal":
+		_boss_canini_carp(1.15)
+	if kademe >= 10 and boss.tip == "boss":
+		boss.guc_artisi += 2
+
+
+func _boss_canini_carp(carpan: float) -> void:
+	boss.max_can = int(boss.max_can * carpan)
+	boss.can = boss.max_can
 
 
 func _savas_basi_tilsimlari() -> void:
@@ -351,7 +378,7 @@ func _niyet_belirle() -> void:
 	match secilen["tur"]:
 		"tekil":
 			var hedef: Oyuncu = canlilar[rng.randi_range(0, canlilar.size() - 1)]
-			var h := int(secilen["hasar"]) + boss.guc
+			var h := int(round(int(secilen["hasar"]) * hasar_carpani)) + boss.guc
 			n["hedef"] = hedef.no
 			n["hasar"] = h
 			n["metin"] = "%s -> %s (%d hasar)" % [ad, hedef.ad, h]
@@ -363,12 +390,12 @@ func _niyet_belirle() -> void:
 			for o in karisik.slice(0, 2):
 				hedefler.append(o.no)
 				adlar.append(o.ad)
-			var h := int(secilen["hasar"]) + boss.guc
+			var h := int(round(int(secilen["hasar"]) * hasar_carpani)) + boss.guc
 			n["hedefler"] = hedefler
 			n["hasar"] = h
 			n["metin"] = "%s -> %s (her birine %d hasar)" % [ad, " ve ".join(adlar), h]
 		"alan":
-			var h := int(secilen["hasar"]) + int(boss.guc / 2.0)
+			var h := int(round(int(secilen["hasar"]) * hasar_carpani)) + int(boss.guc / 2.0)
 			n["hasar"] = h
 			n["metin"] = "%s -> Tüm takım (%d hasar)" % [ad, h]
 		"guc":

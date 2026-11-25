@@ -6,6 +6,10 @@ const KART_KLASORU := "res://kartlar/veriler"
 
 var havuz: Dictionary
 var kosu: Kosu
+var kayit: Kayit
+var secili_kademe := 0
+var _kademe_etiketi: Label
+var _kademe_aciklamasi: Label
 var aktif_ekran: Control
 var sonuc_ekraninda := false
 var _son_tip := ""
@@ -14,6 +18,8 @@ var _son_tip := ""
 func _ready() -> void:
 	size = Vector2(1280, 720)
 	havuz = KartHavuzu.yukle(KART_KLASORU)
+	kayit = Kayit.yukle()
+	secili_kademe = kayit.deger("acik_kademe")
 	_sinif_secimi_goster()
 
 
@@ -63,10 +69,49 @@ func _sinif_secimi_goster() -> void:
 		ekran.add_child(btn)
 
 
-	var krediler := Arayuz.buton("Krediler", Vector2(160, 44), Color("#2a2450"), Color("#7a6fd0"), 16)
-	krediler.position = Vector2(560, 600)
+	# Kademe seçici
+	var geri := Arayuz.buton("<", Vector2(50, 46))
+	geri.position = Vector2(470, 545)
+	geri.pressed.connect(_kademe_degistir.bind(-1))
+	ekran.add_child(geri)
+	_kademe_etiketi = Arayuz.etiket(ekran, 22, "", Color("#ff9a7a"))
+	_kademe_etiketi.position = Vector2(525, 552)
+	_kademe_etiketi.size = Vector2(230, 32)
+	_kademe_etiketi.mouse_filter = Control.MOUSE_FILTER_STOP
+	Ipucu.baglan(_kademe_etiketi, func(): return "[b]%s[/b]\n%s" % [Kademe.baslik(secili_kademe), Kademe.tum_kurallar(secili_kademe)])
+	var ileri := Arayuz.buton(">", Vector2(50, 46))
+	ileri.position = Vector2(760, 545)
+	ileri.pressed.connect(_kademe_degistir.bind(1))
+	ekran.add_child(ileri)
+	_kademe_aciklamasi = Arayuz.etiket(ekran, 14, "", Color("#d8c8b8"))
+	_kademe_aciklamasi.position = Vector2(240, 598)
+	_kademe_aciklamasi.size = Vector2(800, 22)
+	_kademe_degistir(0)
+
+	# İstatistikler
+	var kalan := kayit.siradaki_kilide_kalan()
+	var istatistik := "Koşu: %d   ·   Zafer: %d   ·   Kazanılan savaş: %d   ·   Açılan içerik: %d/%d" % [
+		kayit.deger("kosu"), kayit.deger("zafer"), kayit.deger("kazanilan_savas"),
+		kayit.deger("acilan"), Kayit.KILIT_SIRASI.size()]
+	if kalan > 0:
+		istatistik += "   ·   Sıradaki kilide %d savaş" % kalan
+	var ist := Arayuz.etiket(ekran, 14, istatistik, Color("#a8a0c0"))
+	ist.position = Vector2(0, 640)
+	ist.size = Vector2(1280, 22)
+
+	var krediler := Arayuz.buton("Krediler", Vector2(140, 40), Color("#2a2450"), Color("#7a6fd0"), 15)
+	krediler.position = Vector2(1120, 660)
 	krediler.pressed.connect(_kredileri_goster)
 	ekran.add_child(krediler)
+
+
+func _kademe_degistir(yon: int) -> void:
+	secili_kademe = clampi(secili_kademe + yon, 0, kayit.deger("acik_kademe"))
+	_kademe_etiketi.text = Kademe.baslik(secili_kademe)
+	if secili_kademe == 0:
+		_kademe_aciklamasi.text = "Koşu kazandıkça yeni zorluk kademeleri açılır."
+	else:
+		_kademe_aciklamasi.text = "Yeni kural: " + Kademe.ACIKLAMALAR[secili_kademe] + "  (ve önceki kademelerinkiler)"
 
 
 func _kredileri_goster() -> void:
@@ -90,7 +135,7 @@ func _kredileri_goster() -> void:
 
 
 func _kosu_baslat(sinif: int) -> void:
-	kosu = Kosu.new(havuz, sinif)
+	kosu = Kosu.new(havuz, sinif, secili_kademe, kayit.kilitli_idler())
 	var t := TilsimEkrani.new(kosu.tilsim_secenekleri(), "Yolculuğa bir tılsımla başla",
 		"Tılsımlar bütün takıma koşu sonuna kadar bonus verir. Elitleri yenerek daha fazlasını bulabilirsin.")
 	t.secildi.connect(func(id: String):
@@ -159,6 +204,7 @@ func _kart_odulu_goster() -> void:
 
 func _kosu_sonu_goster() -> void:
 	sonuc_ekraninda = true
+	var acilan := kayit.kosu_bitti(kosu.kazandi, kosu.kademe, kosu.kazanilan_savas)
 	var ekran := Control.new()
 	ekran.size = size
 	_ekrani_degistir(ekran)
@@ -170,11 +216,20 @@ func _kosu_sonu_goster() -> void:
 	b.size = Vector2(1280, 80)
 	var metin := "Kızıl Ejder yenildi! Ozanlar bu zaferi yıllarca anlatacak." if zafer \
 		else "Takım %d. katmanda düştü." % (kosu.katman + 1)
-	var a := Arayuz.etiket(ekran, 20, metin + "\nKazanılan savaş: %d" % kosu.kazanilan_savas, Color("#d8d0f0"))
+	var a := Arayuz.etiket(ekran, 20, metin + "\n%s  ·  Kazanılan savaş: %d" % [Kademe.baslik(kosu.kademe), kosu.kazanilan_savas], Color("#d8d0f0"))
 	a.position = Vector2(0, 300)
 	a.size = Vector2(1280, 60)
+	var haberler: PackedStringArray = []
+	if acilan["yeni_kademe"] >= 0:
+		haberler.append("Yeni zorluk açıldı: %s" % Kademe.baslik(acilan["yeni_kademe"]))
+	for ad in acilan["acilanlar"]:
+		haberler.append("Kilidi açıldı: %s" % ad)
+	if not haberler.is_empty():
+		var h := Arayuz.etiket(ekran, 19, "\n".join(haberler), Arayuz.ALTIN)
+		h.position = Vector2(0, 375)
+		h.size = Vector2(1280, 30 * haberler.size())
 	var yeni := Arayuz.buton("Yeni Koşu", Vector2(240, 60))
-	yeni.position = Vector2(520, 420)
+	yeni.position = Vector2(520, 420 + 30 * haberler.size())
 	yeni.pressed.connect(func(): get_tree().reload_current_scene())
 	ekran.add_child(yeni)
 

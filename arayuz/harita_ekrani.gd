@@ -16,7 +16,7 @@ const TIP_BILGI := {
 const DURAK_ACIKLAMALARI := {
 	"savas": "[b]Savaş[/b]\nNormal bir düşmanla karşılaşırsınız. Kazanınca destene bir kart seçersin.",
 	"elit": "[b]Elit Savaş[/b]\nÇok daha güçlü bir düşman. Kazanınca 3 tılsımdan birini ve bir kart seçersin.",
-	"dinlenme": "[b]Kamp Ateşi[/b]\nYa takım max canının %30'u kadar iyileşir ya da bir kartını kalıcı olarak güçlendirirsin.",
+	"dinlenme": "[b]Kamp Ateşi[/b]\nYa takım dinlenip iyileşir ya da bir kartını kalıcı olarak güçlendirirsin.",
 	"gizem": "[b]Gizemli Olay[/b]\nRastgele bir olay. İyi de olabilir, bedeli olan bir fırsat da.",
 	"boss": "[b]Kızıl Ejder[/b]\nKoşunun son düşmanı. Bütün takıma ateş püskürür ve savaş uzadıkça öfkelenir.",
 }
@@ -37,6 +37,12 @@ func _ready() -> void:
 	var baslik := Arayuz.etiket(self, 30, "Yol Haritası", Arayuz.ALTIN)
 	baslik.position = Vector2(20, 14)
 	baslik.size = Vector2(300, 40)
+	var kademe_etiketi := Arayuz.etiket(self, 18, Kademe.baslik(kosu.kademe), Color("#ff9a7a"))
+	kademe_etiketi.position = Vector2(1040, 20)
+	kademe_etiketi.size = Vector2(220, 30)
+	kademe_etiketi.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	kademe_etiketi.mouse_filter = Control.MOUSE_FILTER_STOP
+	Ipucu.baglan(kademe_etiketi, func(): return "[b]%s[/b]\n%s" % [Kademe.baslik(kosu.kademe), Kademe.tum_kurallar(kosu.kademe)])
 	baslik.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var alt := Arayuz.etiket(self, 14, "Parlayan duraklardan birini seç.", Color("#c8c0e0"))
 	alt.position = Vector2(20, 54)

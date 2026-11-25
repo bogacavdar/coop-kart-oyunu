@@ -23,7 +23,7 @@ func _ready() -> void:
 	a.size = Vector2(1280, 24)
 
 	var dinlen := Arayuz.secenek_butonu("Dinlen",
-		"Bütün takım max canının %30'u kadar iyileşir.", Color("#3fae6a"), Vector2(320, 200))
+		"Bütün takım max canının %%%d'i kadar iyileşir." % int(kosu.dinlenme_orani() * 100), Color("#3fae6a"), Vector2(320, 200))
 	dinlen.position = Vector2(290, 250)
 	dinlen.pressed.connect(_dinlen)
 	add_child(dinlen)

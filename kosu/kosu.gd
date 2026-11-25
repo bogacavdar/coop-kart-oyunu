@@ -39,17 +39,23 @@ var sira := -1
 var bitti := false
 var kazandi := false
 var kazanilan_savas := 0
+## Zorluk kademesi ve henüz kilidi açılmamış kart/tılsım id'leri
+var kademe := 0
+var kilitli: Array = []
 ## Takımın tılsımları (id listesi)
 var tilsimlar: Array[String] = []
 
 
-func _init(p_havuz: Dictionary, p_insan: int) -> void:
+func _init(p_havuz: Dictionary, p_insan: int, p_kademe: int = 0, p_kilitli: Array = []) -> void:
 	rng.randomize()
 	havuz = p_havuz
 	insan = p_insan
+	kademe = p_kademe
+	kilitli = p_kilitli
 	for s in SINIFLAR:
 		var can: int = SINIF_CANLARI[s]
-		takim.append({"sinif": s, "can": can, "max_can": can, "deste": baslangic_destesi(havuz, s)})
+		var baslangic_cani := int(ceil(can * 0.9)) if kademe >= 7 else can
+		takim.append({"sinif": s, "can": baslangic_cani, "max_can": can, "deste": baslangic_destesi(havuz, s)})
 	_harita_olustur()
 
 
@@ -125,7 +131,7 @@ func savas_kurulumu(tip: String) -> Dictionary:
 	var liste: Array = []
 	for v in takim:
 		liste.append({"sinif": v["sinif"], "can": v["can"], "max_can": v["max_can"], "deste": v["deste"]})
-	return {"oyuncular": liste, "dusman": dusman, "tilsimlar": tilsimlar.duplicate()}
+	return {"oyuncular": liste, "dusman": dusman, "tilsimlar": tilsimlar.duplicate(), "kademe": kademe}
 
 
 ## Savaş bittikten sonra canları takıma geri yazar. Düşenler çeyrek canla kalkar.
@@ -137,7 +143,8 @@ func savas_sonucu(motor: SavasMotoru, tip: String) -> void:
 	kazanilan_savas += 1
 	for o in motor.oyuncular:
 		var v := takim[o.no]
-		v["can"] = o.can if o.hayatta() else maxi(1, int(v["max_can"] / 4.0))
+		var kalkis := 1 if kademe >= 6 else maxi(1, int(v["max_can"] / 4.0))
+		v["can"] = o.can if o.hayatta() else kalkis
 		if tilsimlar.has("sifaci_kolyesi"):
 			v["can"] = mini(v["max_can"], v["can"] + 8)
 	if tip == "boss":
@@ -148,7 +155,7 @@ func savas_sonucu(motor: SavasMotoru, tip: String) -> void:
 # --- Tılsımlar ------------------------------------------------------------
 
 func tilsim_secenekleri(adet: int = 3) -> Array[String]:
-	var aday: Array = Tilsimlar.LISTE.keys().filter(func(id): return not tilsimlar.has(id))
+	var aday: Array = Tilsimlar.LISTE.keys().filter(func(id): return not tilsimlar.has(id) and not kilitli.has(id))
 	var liste: Array[String] = []
 	while liste.size() < adet and not aday.is_empty():
 		var i := rng.randi_range(0, aday.size() - 1)
@@ -174,7 +181,7 @@ func deste(sinif: int) -> Array:
 
 
 func odul_secenekleri(sinif: int) -> Array[CardData]:
-	var aday: Array = havuz.get(sinif, []).filter(func(k): return not k.baslangic)
+	var aday: Array = havuz.get(sinif, []).filter(func(k): return not k.baslangic and not kilitli.has(String(k.id)))
 	var liste: Array[CardData] = []
 	while liste.size() < 3 and not aday.is_empty():
 		var i := rng.randi_range(0, aday.size() - 1)
@@ -244,9 +251,13 @@ func botlar_kart_cikarsin() -> void:
 
 # --- Dinlenme ve gizem ----------------------------------------------------
 
+func dinlenme_orani() -> float:
+	return 0.2 if kademe >= 3 else 0.3
+
+
 func dinlen() -> void:
 	for v in takim:
-		v["can"] = mini(v["max_can"], v["can"] + int(ceil(v["max_can"] * 0.3)))
+		v["can"] = mini(v["max_can"], v["can"] + int(ceil(v["max_can"] * dinlenme_orani())))
 
 
 func _herkese_hasar(miktar: int) -> void:
