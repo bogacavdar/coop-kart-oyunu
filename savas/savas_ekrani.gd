@@ -1,133 +1,217 @@
 extends Control
-## Savaş ekranı. Şimdilik 4 oyuncuyu tek bilgisayardan sırayla yönetiyorsun:
-## aktif oyuncunun elinden manası yettiği kadar kart seç,
-## müttefik kartlarında hedef oyuncunun paneline tıkla. Herkes seçince "Turu Oyna".
+## Savaş ekranı: masanın ortasında boss, etrafında 4 koltuk.
+## Sen alttaki koltuktasın, diğer 3 sınıfı botlar oynar.
+## Botlar tur başında planlarını yapar ve koltuklarının altında gösterir,
+## sen de onlara göre kartlarını seçersin.
 
 const KART_KLASORU := "res://kartlar/veriler"
+const BOSS_MERKEZI := Vector2(640, 285)
+## Koltukların portre merkezleri: alt (sen), sol, üst, sağ
+const KOLTUK_MERKEZLERI: Array[Vector2] = [
+	Vector2(498, 520), Vector2(150, 285), Vector2(640, 64), Vector2(1130, 285),
+]
+const EL_Y := 668.0
+const EL_ARALIK := 132.0
+const EL_OLCEK := 0.72
 
 var motor: SavasMotoru
-var aktif := 0
+var insan := 0
 var hedef_bekleyen: CardData = null
 var oynatiliyor := false
 
-var _boss_panel: PanelContainer
+var _boss: BossGorunumu
 var _boss_ad: Label
 var _boss_bar: ProgressBar
 var _boss_can: Label
 var _boss_durum: Label
+var _niyet_kutu: PanelContainer
 var _niyet: Label
 var _log: RichTextLabel
 var _tur_label: Label
 var _bilgi: Label
 var _buton: Button
-var _paneller: Array[OyuncuPaneli] = []
-var _el: HBoxContainer
+var _koltuklar: Array[Koltuk] = []
+var _el_katmani: Control
+var _efekt_katmani: Control
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(Masa.new())
+	_sinif_secimi_goster()
+
+
+# --- Sınıf seçimi ----------------------------------------------------------
+
+func _sinif_secimi_goster() -> void:
+	var perde := ColorRect.new()
+	perde.color = Color(0, 0, 0, 0.6)
+	perde.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(perde)
+
+	var orta := CenterContainer.new()
+	orta.set_anchors_preset(Control.PRESET_FULL_RECT)
+	perde.add_child(orta)
+
+	var kutu := VBoxContainer.new()
+	kutu.add_theme_constant_override("separation", 22)
+	orta.add_child(kutu)
+
+	var baslik := _etiket(kutu, 44)
+	baslik.text = "Sınıfını Seç"
+	baslik.add_theme_color_override("font_color", Color("#e8c27a"))
+	var alt := _etiket(kutu, 17)
+	alt.text = "Diğer üç sınıfı bot takım arkadaşların oynayacak."
+
+	var sira := HBoxContainer.new()
+	sira.add_theme_constant_override("separation", 18)
+	kutu.add_child(sira)
+
+	var aciklamalar := {
+		CardData.Sinif.TANK: "Boss'un saldırılarını üstüne çeker, takımı zırhla korur.",
+		CardData.Sinif.DESTEK: "Takımı iyileştirir, kalkan verir.",
+		CardData.Sinif.HASARCI: "Boss'u eritir. Kırılgandır.",
+		CardData.Sinif.KONTROLCU: "Boss'u işaretler, zayıflatır, durdurur.",
+	}
+	for s in [CardData.Sinif.TANK, CardData.Sinif.DESTEK, CardData.Sinif.HASARCI, CardData.Sinif.KONTROLCU]:
+		var renk: Color = CardView.SINIF_RENKLERI[s]
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(230, 190)
+		b.add_theme_stylebox_override("normal", _kutu_stili(renk.darkened(0.7), renk))
+		b.add_theme_stylebox_override("hover", _kutu_stili(renk.darkened(0.5), renk.lightened(0.3)))
+		b.add_theme_stylebox_override("pressed", _kutu_stili(renk.darkened(0.4), Color.GOLD))
+		b.pressed.connect(func():
+			perde.queue_free()
+			_savasi_baslat(s)
+		)
+		sira.add_child(b)
+
+		var ic := VBoxContainer.new()
+		ic.set_anchors_preset(Control.PRESET_FULL_RECT)
+		ic.alignment = BoxContainer.ALIGNMENT_CENTER
+		ic.add_theme_constant_override("separation", 14)
+		ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(ic)
+		var ad := _etiket(ic, 28)
+		ad.text = CardData.sinif_adi(s)
+		ad.add_theme_color_override("font_color", renk.lightened(0.35))
+		var ac := _etiket(ic, 15)
+		ac.text = aciklamalar[s]
+		ac.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ac.custom_minimum_size = Vector2(200, 0)
+
+
+func _savasi_baslat(sinif: int) -> void:
+	insan = sinif  # oyuncu sırası sınıf sırasıyla aynı
 	motor = SavasMotoru.new(KartHavuzu.yukle(KART_KLASORU))
 	_arayuzu_kur()
 	_log_yaz("[b]Tur 1[/b] başladı. Boss: %s" % motor.boss.ad)
+	_botlari_planla()
 	_hepsini_guncelle()
 
 
 # --- Arayüz kurulumu -------------------------------------------------------
 
 func _arayuzu_kur() -> void:
-	var arka := ColorRect.new()
-	arka.color = Color("#0f0d1a")
-	arka.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(arka)
+	_boss = BossGorunumu.new()
+	add_child(_boss)
+	_boss.yerlestir(BOSS_MERKEZI)
 
-	var kenar := MarginContainer.new()
-	kenar.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for yon in ["left", "right", "top", "bottom"]:
-		kenar.add_theme_constant_override("margin_" + yon, 12)
-	add_child(kenar)
-
-	var dikey := VBoxContainer.new()
-	dikey.add_theme_constant_override("separation", 8)
-	kenar.add_child(dikey)
-
-	# Üst sıra: boss + savaş günlüğü
-	var ust := HBoxContainer.new()
-	ust.custom_minimum_size = Vector2(0, 170)
-	ust.add_theme_constant_override("separation", 12)
-	dikey.add_child(ust)
-
-	_boss_panel = PanelContainer.new()
-	_boss_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_boss_panel.add_theme_stylebox_override("panel", _kutu_stili(Color("#2a1830"), Color("#8a3a5a")))
-	ust.add_child(_boss_panel)
-
-	var boss_v := VBoxContainer.new()
-	boss_v.alignment = BoxContainer.ALIGNMENT_CENTER
-	_boss_panel.add_child(boss_v)
-	_boss_ad = _etiket(boss_v, 24)
+	_boss_ad = _etiket_at(Rect2(440, 386, 400, 30), 24)
+	_boss_ad.add_theme_color_override("font_color", Color("#e8c27a"))
 	_boss_bar = ProgressBar.new()
 	_boss_bar.show_percentage = false
-	_boss_bar.custom_minimum_size = Vector2(0, 22)
+	_boss_bar.position = Vector2(500, 420)
+	_boss_bar.size = Vector2(280, 16)
+	_boss_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_bar.add_theme_stylebox_override("fill", _bar_stili(Color("#c0392b")))
-	_boss_bar.add_theme_stylebox_override("background", _bar_stili(Color("#3a2a2a")))
-	boss_v.add_child(_boss_bar)
-	_boss_can = _etiket(boss_v, 15)
-	_boss_durum = _etiket(boss_v, 15)
+	_boss_bar.add_theme_stylebox_override("background", _bar_stili(Color(0, 0, 0, 0.6)))
+	add_child(_boss_bar)
+	_boss_can = _etiket_at(Rect2(440, 437, 400, 20), 14)
+	_boss_durum = _etiket_at(Rect2(440, 456, 400, 20), 14)
 	_boss_durum.add_theme_color_override("font_color", Color("#c38bff"))
-	_niyet = _etiket(boss_v, 18)
-	_niyet.add_theme_color_override("font_color", Color("#ffb347"))
 
+	# Niyet balonu
+	_niyet_kutu = PanelContainer.new()
+	_niyet_kutu.position = Vector2(790, 150)
+	_niyet_kutu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_niyet_kutu.add_theme_stylebox_override("panel", _kutu_stili(Color(0.1, 0.05, 0.02, 0.85), Color("#ffb347")))
+	add_child(_niyet_kutu)
+	_niyet = Label.new()
+	_niyet.custom_minimum_size = Vector2(210, 0)
+	_niyet.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_niyet.add_theme_font_size_override("font_size", 15)
+	_niyet.add_theme_color_override("font_color", Color("#ffb347"))
+	_niyet_kutu.add_child(_niyet)
+
+	# Koltuklar
+	for o in motor.oyuncular:
+		var k := Koltuk.new(o.no, CardView.SINIF_RENKLERI.get(o.sinif, Color.GRAY), o.no == insan)
+		k.tiklandi.connect(_on_koltuk_tiklandi)
+		add_child(k)
+		k.merkeze_yerlestir(KOLTUK_MERKEZLERI[(o.no - insan + 4) % 4])
+		_koltuklar.append(k)
+
+	# Sol üst: tur ve bilgi
+	_tur_label = _etiket_at(Rect2(20, 10, 200, 34), 26)
+	_tur_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_bilgi = _etiket_at(Rect2(20, 46, 330, 90), 15)
+	_bilgi.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_bilgi.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	# Sol alt: savaş günlüğü
 	var log_panel := PanelContainer.new()
-	log_panel.custom_minimum_size = Vector2(400, 0)
-	log_panel.add_theme_stylebox_override("panel", _kutu_stili(Color("#161424"), Color("#33304a")))
-	ust.add_child(log_panel)
+	log_panel.position = Vector2(14, 585)
+	log_panel.size = Vector2(250, 122)
+	log_panel.add_theme_stylebox_override("panel", _kutu_stili(Color(0.05, 0.04, 0.1, 0.8), Color("#3a3360")))
+	add_child(log_panel)
 	_log = RichTextLabel.new()
 	_log.bbcode_enabled = true
 	_log.scroll_following = true
-	_log.add_theme_font_size_override("normal_font_size", 13)
-	_log.add_theme_font_size_override("bold_font_size", 13)
+	_log.add_theme_font_size_override("normal_font_size", 12)
+	_log.add_theme_font_size_override("bold_font_size", 12)
 	log_panel.add_child(_log)
 
-	# Orta sıra: tur, bilgi, buton
-	var orta := HBoxContainer.new()
-	orta.add_theme_constant_override("separation", 12)
-	dikey.add_child(orta)
-	_tur_label = _etiket(orta, 20)
-	_tur_label.custom_minimum_size = Vector2(90, 0)
-	_tur_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_bilgi = _etiket(orta, 16)
-	_bilgi.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_bilgi.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Sağ alt: tur bitirme butonu
 	_buton = Button.new()
 	_buton.text = "Turu Oyna"
-	_buton.custom_minimum_size = Vector2(180, 40)
+	_buton.position = Vector2(1050, 610)
+	_buton.size = Vector2(210, 70)
+	_buton.add_theme_font_size_override("font_size", 22)
+	_buton.add_theme_stylebox_override("normal", _kutu_stili(Color("#5c4720"), Color("#e8c27a")))
+	_buton.add_theme_stylebox_override("hover", _kutu_stili(Color("#7a5f2a"), Color("#ffe39a")))
+	_buton.add_theme_stylebox_override("pressed", _kutu_stili(Color("#3d2f15"), Color("#e8c27a")))
+	_buton.add_theme_stylebox_override("disabled", _kutu_stili(Color("#2a2418"), Color("#5c4720")))
 	_buton.pressed.connect(_turu_oyna)
-	orta.add_child(_buton)
+	add_child(_buton)
 
-	# Oyuncu panelleri
-	var sira := HBoxContainer.new()
-	sira.add_theme_constant_override("separation", 10)
-	dikey.add_child(sira)
-	for o in motor.oyuncular:
-		var p := OyuncuPaneli.new(o.no, CardView.SINIF_RENKLERI.get(o.sinif, Color.GRAY))
-		p.tiklandi.connect(_on_panel_tiklandi)
-		sira.add_child(p)
-		_paneller.append(p)
+	_el_katmani = Control.new()
+	_el_katmani.size = Vector2(1280, 720)
+	_el_katmani.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_el_katmani)
 
-	# Aktif oyuncunun eli
-	_el = HBoxContainer.new()
-	_el.alignment = BoxContainer.ALIGNMENT_CENTER
-	_el.add_theme_constant_override("separation", 16)
-	_el.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	dikey.add_child(_el)
+	_efekt_katmani = Control.new()
+	_efekt_katmani.size = Vector2(1280, 720)
+	_efekt_katmani.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_efekt_katmani.z_index = 100
+	add_child(_efekt_katmani)
 
 
 func _etiket(ebeveyn: Control, boyut: int) -> Label:
 	var l := Label.new()
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.add_theme_font_size_override("font_size", boyut)
+	l.add_theme_color_override("font_outline_color", Color.BLACK)
+	l.add_theme_constant_override("outline_size", 4)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ebeveyn.add_child(l)
+	return l
+
+
+func _etiket_at(alan: Rect2, boyut: int) -> Label:
+	var l := _etiket(self, boyut)
+	l.position = alan.position
+	l.size = alan.size
 	return l
 
 
@@ -136,7 +220,7 @@ func _kutu_stili(zemin: Color, kenar: Color) -> StyleBoxFlat:
 	s.bg_color = zemin
 	s.border_color = kenar
 	s.set_border_width_all(2)
-	s.set_corner_radius_all(10)
+	s.set_corner_radius_all(12)
 	s.set_content_margin_all(10)
 	return s
 
@@ -144,11 +228,17 @@ func _kutu_stili(zemin: Color, kenar: Color) -> StyleBoxFlat:
 func _bar_stili(renk: Color) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = renk
-	s.set_corner_radius_all(4)
+	s.set_corner_radius_all(5)
 	return s
 
 
 # --- Ekranı güncelleme -----------------------------------------------------
+
+func _botlari_planla() -> void:
+	for o in motor.oyuncular:
+		if o.no != insan and o.hayatta():
+			Bot.planla(motor, o)
+
 
 func _hepsini_guncelle() -> void:
 	var b := motor.boss
@@ -157,61 +247,69 @@ func _hepsini_guncelle() -> void:
 	_boss_bar.value = b.can
 	_boss_can.text = "Can: %d / %d" % [b.can, b.max_can]
 	_boss_durum.text = b.durum_metni()
-	_niyet.text = "Sonraki hamle: " + str(b.niyet.get("metin", ""))
+	_niyet.text = "Sonraki hamle:\n" + str(b.niyet.get("metin", ""))
+	_niyet_kutu.visible = not motor.bitti
 	_tur_label.text = "Tur %d" % motor.tur
-	for i in _paneller.size():
-		var o := motor.oyuncular[i]
-		_paneller[i].guncelle(o, i == aktif and not oynatiliyor, hedef_bekleyen != null, _secim_metni(o))
+	for o in motor.oyuncular:
+		_koltuklar[o.no].guncelle(o, o.no == insan, hedef_bekleyen != null, _plan_metni(o))
 	_el_guncelle()
 	_bilgi_guncelle()
 	_buton.disabled = oynatiliyor or motor.bitti
 
 
-func _secim_metni(o: Oyuncu) -> String:
+func _plan_metni(o: Oyuncu) -> String:
 	if o.secimler.is_empty():
-		return "Kart seçilmedi"
+		return "Kart seç" if o.no == insan else "Plan: pas"
 	var parcalar: PackedStringArray = []
 	for s in o.secimler:
 		var metin: String = (s["kart"] as CardData).kart_adi
 		if s["hedef"] >= 0:
 			metin += " -> " + motor.oyuncular[s["hedef"]].ad
 		parcalar.append(metin)
-	return ", ".join(parcalar)
+	return ("Seçim: " if o.no == insan else "Plan: ") + ", ".join(parcalar)
 
 
 func _el_guncelle() -> void:
-	for c in _el.get_children():
-		_el.remove_child(c)
+	for c in _el_katmani.get_children():
+		_el_katmani.remove_child(c)
 		c.queue_free()
 	if oynatiliyor or motor.bitti:
 		return
-	var o := motor.oyuncular[aktif]
+	var o := motor.oyuncular[insan]
 	if not o.hayatta():
 		return
-	for kart in o.el:
+	var n := o.el.size()
+	for i in n:
+		var kart := o.el[i]
 		var v := CardView.new()
 		v.setup(kart)
-		v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var secili := o.secili_mi(kart)
-		v.set_secili(secili or kart == hedef_bekleyen)
-		if not secili and kart.mana > o.kalan_mana():
-			v.modulate = Color(1, 1, 1, 0.4)
+		var secili := o.secili_mi(kart) or kart == hedef_bekleyen
+		v.set_secili(secili)
+		if not o.secili_mi(kart) and kart.mana > o.kalan_mana():
+			v.modulate = Color(0.55, 0.55, 0.6)
+		var kayma := i - (n - 1) / 2.0
+		var merkez := Vector2(640 + kayma * EL_ARALIK, EL_Y + kayma * kayma * 6 - (34.0 if secili else 0.0))
+		v.temel_z = i
+		v.z_index = i
 		v.card_clicked.connect(_on_kart_tiklandi)
-		_el.add_child(v)
+		_el_katmani.add_child(v)
+		v.yerlestir(merkez, EL_OLCEK, kayma * 0.05, 120.0)
 
 
 func _bilgi_guncelle() -> void:
+	var o := motor.oyuncular[insan]
 	if motor.bitti:
 		_bilgi.text = ""
 	elif oynatiliyor:
 		_bilgi.text = "Tur oynanıyor..."
 	elif hedef_bekleyen != null:
-		_bilgi.text = "%s için hedef seç: bir oyuncu paneline tıkla" % hedef_bekleyen.kart_adi
-	elif motor.hepsi_hazir():
-		_bilgi.text = "Herkes hazır. Turu Oyna'ya bas."
+		_bilgi.text = "%s için hedef seç: bir koltuğa tıkla." % hedef_bekleyen.kart_adi
+	elif not o.hayatta():
+		_bilgi.text = "Düştün. Botlar savaşmaya devam ediyor, Turu Oyna'ya bas."
+	elif not o.oynayabilir_mi():
+		_bilgi.text = "Hazırsın. Turu Oyna'ya bas."
 	else:
-		var o := motor.oyuncular[aktif]
-		_bilgi.text = "%s kart seçiyor (kalan mana %d). Diğer oyuncuya geçmek için paneline tıkla." % [o.ad, o.kalan_mana()]
+		_bilgi.text = "Kart seç (kalan mana %d). Bot arkadaşlarının planı koltuklarının altında yazıyor." % o.kalan_mana()
 
 
 # --- Girdiler --------------------------------------------------------------
@@ -219,15 +317,14 @@ func _bilgi_guncelle() -> void:
 func _on_kart_tiklandi(v: CardView) -> void:
 	if oynatiliyor or motor.bitti:
 		return
-	var o := motor.oyuncular[aktif]
+	var o := motor.oyuncular[insan]
 	var kart := v.data
-	# Seçili karta veya hedef bekleyen karta tekrar tıklamak seçimi geri alır
 	if kart == hedef_bekleyen:
 		hedef_bekleyen = null
 		_hepsini_guncelle()
 		return
 	if o.secili_mi(kart):
-		motor.secimi_kaldir(aktif, kart)
+		motor.secimi_kaldir(insan, kart)
 		_hepsini_guncelle()
 		return
 	if kart.mana > o.kalan_mana():
@@ -238,41 +335,16 @@ func _on_kart_tiklandi(v: CardView) -> void:
 		_hepsini_guncelle()
 		return
 	hedef_bekleyen = null
-	if motor.kart_sec(aktif, kart) and not o.oynayabilir_mi():
-		_sonraki_oyuncu()
+	motor.kart_sec(insan, kart)
 	_hepsini_guncelle()
 
 
-func _on_panel_tiklandi(no: int) -> void:
-	if oynatiliyor or motor.bitti:
+func _on_koltuk_tiklandi(no: int) -> void:
+	if oynatiliyor or motor.bitti or hedef_bekleyen == null:
 		return
-	if hedef_bekleyen != null:
-		if motor.kart_sec(aktif, hedef_bekleyen, no):
-			hedef_bekleyen = null
-			if not motor.oyuncular[aktif].oynayabilir_mi():
-				_sonraki_oyuncu()
-		_hepsini_guncelle()
-		return
-	if motor.oyuncular[no].hayatta():
-		aktif = no
-		_hepsini_guncelle()
-
-
-func _sonraki_oyuncu() -> void:
-	var adet := motor.oyuncular.size()
-	for adim in range(1, adet + 1):
-		var i := (aktif + adim) % adet
-		var o := motor.oyuncular[i]
-		if o.hayatta() and o.oynayabilir_mi():
-			aktif = i
-			return
-
-
-func _ilk_canli() -> int:
-	for o in motor.oyuncular:
-		if o.hayatta():
-			return o.no
-	return 0
+	if motor.kart_sec(insan, hedef_bekleyen, no):
+		hedef_bekleyen = null
+	_hepsini_guncelle()
 
 
 # --- Tur oynatma ve animasyon ----------------------------------------------
@@ -287,53 +359,54 @@ func _turu_oyna() -> void:
 	for olay in olaylar:
 		await _olay_oynat(olay)
 	oynatiliyor = false
-	aktif = _ilk_canli()
 	if not motor.bitti:
+		_botlari_planla()
 		_hepsini_guncelle()
 
 
 func _olay_oynat(olay: Dictionary) -> void:
-	var p: OyuncuPaneli = _paneller[olay["oyuncu"]] if olay.has("oyuncu") else null
+	var k: Koltuk = _koltuklar[olay["oyuncu"]] if olay.has("oyuncu") else null
 	match olay["tip"]:
 		"kart":
 			_log_yaz(olay["metin"])
-			_ucan_yazi(olay["kart_adi"], Color.WHITE, p)
-			_parlat(p)
-			await _bekle(0.45)
+			_ucan_kart(olay["kart"], k.portre_merkezi())
+			k.parlat()
+			await _bekle(0.55)
 		"boss_hasar":
 			_boss_bar.value = olay["can"]
 			_boss_can.text = "Can: %d / %d" % [olay["can"], motor.boss.max_can]
-			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), _boss_panel)
-			_parlat(_boss_panel)
-			await _bekle(0.4)
+			_boss.vur()
+			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), BOSS_MERKEZI, 34)
+			await _bekle(0.35)
 		"boss_durum":
 			_boss_durum.text = olay["durum"]
 			_log_yaz("[color=#c38bff]%s[/color]" % olay["metin"])
-			_ucan_yazi(olay["metin"], Color("#c38bff"), _boss_panel)
-			await _bekle(0.45)
+			_ucan_yazi(olay["metin"], Color("#c38bff"), BOSS_MERKEZI + Vector2(0, -70), 20)
+			await _bekle(0.5)
 		"zirh":
-			p.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
-			_ucan_yazi("+%d zırh" % olay["miktar"], Color("#6fa8ff"), p)
+			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			_ucan_yazi("+%d zırh" % olay["miktar"], Color("#6fa8ff"), k.portre_merkezi(), 22)
 			await _bekle(0.3)
 		"iyilestir":
-			p.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
-			_ucan_yazi("+%d can" % olay["miktar"], Color("#5aff8a"), p)
+			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			_ucan_yazi("+%d can" % olay["miktar"], Color("#5aff8a"), k.portre_merkezi(), 22)
 			await _bekle(0.3)
 		"boss_hamle":
 			_niyet.text = olay["metin"]
 			_log_yaz("[color=#ffb347]%s[/color]" % olay["metin"])
-			_parlat(_boss_panel)
-			await _bekle(0.6)
+			_boss.saldir()
+			await _bekle(0.5)
 		"oyuncu_hasar":
-			p.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
-			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), p)
+			await _mermi(BOSS_MERKEZI, k.portre_merkezi())
+			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			k.parlat()
+			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), k.portre_merkezi(), 30)
 			if olay["emilen"] > 0:
-				_ucan_yazi("%d engellendi" % olay["emilen"], Color("#6fa8ff"), p)
-			_parlat(p)
-			await _bekle(0.4)
+				_ucan_yazi("%d engellendi" % olay["emilen"], Color("#6fa8ff"), k.portre_merkezi() + Vector2(0, 34), 16)
+			await _bekle(0.25)
 		"olum":
 			_log_yaz("[color=#ff5a5a]%s[/color]" % olay["metin"])
-			p.modulate = Color(1, 1, 1, 0.4)
+			k.dus()
 			await _bekle(0.4)
 		"yeni_tur":
 			_log_yaz("[b]Tur %d[/b] başladı." % motor.tur)
@@ -353,41 +426,67 @@ func _log_yaz(metin: String) -> void:
 	_log.append_text(metin + "\n")
 
 
-func _ucan_yazi(metin: String, renk: Color, hedef: Control) -> void:
-	if hedef == null:
-		return
+## Oynanan kart koltuktan masanın ortasına uçar ve kaybolur
+func _ucan_kart(kart: CardData, kaynak: Vector2) -> void:
+	var v := CardView.new()
+	v.setup(kart)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_efekt_katmani.add_child(v)
+	v.yerlestir(kaynak, 0.3)
+	var hedef := BOSS_MERKEZI + Vector2(randf_range(-60, 60), 10) - v.size / 2.0
+	var tw := v.create_tween()
+	tw.set_parallel()
+	tw.tween_property(v, "position", hedef, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(v, "scale", Vector2.ONE * 0.55, 0.3)
+	tw.chain().tween_property(v, "modulate:a", 0.0, 0.3).set_delay(0.3)
+	tw.chain().tween_callback(v.queue_free)
+
+
+## Boss'tan oyuncuya giden ateş topu
+func _mermi(bas: Vector2, son: Vector2) -> void:
+	var m := Panel.new()
+	m.size = Vector2(26, 26)
+	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color("#ffb347")
+	s.set_corner_radius_all(13)
+	s.shadow_color = Color(1, 0.4, 0.1, 0.8)
+	s.shadow_size = 10
+	m.add_theme_stylebox_override("panel", s)
+	_efekt_katmani.add_child(m)
+	m.position = bas - m.size / 2.0
+	var tw := m.create_tween()
+	tw.tween_property(m, "position", son - m.size / 2.0, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await tw.finished
+	m.queue_free()
+
+
+func _ucan_yazi(metin: String, renk: Color, konum: Vector2, boyut: int) -> void:
 	var l := Label.new()
 	l.text = metin
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.z_index = 100
-	l.add_theme_font_size_override("font_size", 22)
+	l.add_theme_font_size_override("font_size", boyut)
 	l.add_theme_color_override("font_color", renk)
 	l.add_theme_color_override("font_outline_color", Color.BLACK)
-	l.add_theme_constant_override("outline_size", 6)
-	add_child(l)
-	var merkez := hedef.global_position + hedef.size / 2.0
-	l.global_position = merkez + Vector2(randf_range(-70, 10), randf_range(-20, 0))
+	l.add_theme_constant_override("outline_size", 7)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.size = Vector2(300, boyut + 10)
+	_efekt_katmani.add_child(l)
+	l.position = konum - l.size / 2.0 + Vector2(randf_range(-25, 25), randf_range(-10, 5))
 	var tw := l.create_tween().set_parallel()
-	tw.tween_property(l, "position:y", l.position.y - 50, 0.9)
-	tw.tween_property(l, "modulate:a", 0.0, 0.6).set_delay(0.4)
+	tw.tween_property(l, "position:y", l.position.y - 55, 1.0)
+	tw.tween_property(l, "modulate:a", 0.0, 0.6).set_delay(0.45)
 	tw.chain().tween_callback(l.queue_free)
-
-
-func _parlat(c: Control) -> void:
-	if c == null:
-		return
-	c.self_modulate = Color(1.8, 1.8, 1.8)
-	var tw := c.create_tween()
-	tw.tween_property(c, "self_modulate", Color.WHITE, 0.3)
 
 
 func _sonuc_goster(zafer: bool) -> void:
 	_buton.disabled = true
+	_niyet_kutu.visible = false
 	var perde := ColorRect.new()
 	perde.color = Color(0, 0, 0, 0.75)
 	perde.set_anchors_preset(Control.PRESET_FULL_RECT)
 	perde.mouse_filter = Control.MOUSE_FILTER_STOP
-	perde.z_index = 200
+	perde.z_index = 300
 	add_child(perde)
 
 	var orta := CenterContainer.new()
@@ -398,7 +497,7 @@ func _sonuc_goster(zafer: bool) -> void:
 	kutu.add_theme_constant_override("separation", 20)
 	orta.add_child(kutu)
 
-	var baslik := _etiket(kutu, 56)
+	var baslik := _etiket(kutu, 60)
 	baslik.text = "ZAFER!" if zafer else "YENİLDİNİZ"
 	baslik.add_theme_color_override("font_color", Color("#5aff8a") if zafer else Color("#ff5a5a"))
 
@@ -410,7 +509,8 @@ func _sonuc_goster(zafer: bool) -> void:
 
 	var tekrar := Button.new()
 	tekrar.text = "Yeniden Başla"
-	tekrar.custom_minimum_size = Vector2(220, 50)
+	tekrar.custom_minimum_size = Vector2(220, 54)
 	tekrar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	tekrar.add_theme_font_size_override("font_size", 20)
 	tekrar.pressed.connect(func(): get_tree().reload_current_scene())
 	kutu.add_child(tekrar)

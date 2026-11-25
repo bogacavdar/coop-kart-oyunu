@@ -139,7 +139,7 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 	var o: Oyuncu = oyuncular[h["oyuncu"]]
 	var kart: CardData = h["kart"]
 	olaylar.append({
-		"tip": "kart", "oyuncu": o.no, "kart_adi": kart.kart_adi,
+		"tip": "kart", "oyuncu": o.no, "kart": kart, "kart_adi": kart.kart_adi,
 		"metin": "%s: %s" % [o.ad, kart.kart_adi],
 	})
 

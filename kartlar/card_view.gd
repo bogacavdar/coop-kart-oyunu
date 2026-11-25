@@ -22,6 +22,14 @@ const SINIF_RENKLERI := {
 var data: CardData
 var secili := false
 
+## Elde yerleşim için: hover'da kart bu değerlere göre büyür/kalkar
+var temel_olcek := 1.0
+var temel_konum := Vector2.ZERO
+var temel_rotasyon := 0.0
+var temel_z := 0
+## 0'dan büyükse hover'da kart bu kadar piksel yukarı kalkar ve tam boyuta gelir
+var yukselme := 0.0
+
 var _frame_style: StyleBoxFlat
 var _art: TextureRect
 var _name_label: Label
@@ -45,6 +53,17 @@ func _init() -> void:
 func setup(card_data: CardData) -> void:
 	data = card_data
 	_refresh()
+
+
+## Kartın görsel ortası `merkez` noktasına gelecek şekilde yerleştirir.
+func yerlestir(merkez: Vector2, olcek: float, rotasyon: float = 0.0, p_yukselme: float = 0.0) -> void:
+	temel_olcek = olcek
+	temel_rotasyon = rotasyon
+	yukselme = p_yukselme
+	temel_konum = merkez - size / 2.0
+	position = temel_konum
+	scale = Vector2.ONE * olcek
+	rotation = rotasyon
 
 
 func set_secili(deger: bool) -> void:
@@ -151,7 +170,14 @@ func _gui_input(event: InputEvent) -> void:
 func _on_hover(ustunde: bool) -> void:
 	if _tween:
 		_tween.kill()
-	z_index = 10 if ustunde else 0
-	_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	var hedef := Vector2.ONE * (HOVER_SCALE if ustunde else 1.0)
-	_tween.tween_property(self, "scale", hedef, 0.12)
+	z_index = 50 if ustunde else temel_z
+	_tween = create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if yukselme > 0.0:
+		var olcek := 1.0 if ustunde else temel_olcek
+		var konum := temel_konum - Vector2(0, yukselme) if ustunde else temel_konum
+		_tween.tween_property(self, "scale", Vector2.ONE * olcek, 0.12)
+		_tween.tween_property(self, "position", konum, 0.12)
+		_tween.tween_property(self, "rotation", 0.0 if ustunde else temel_rotasyon, 0.12)
+	else:
+		var hedef := Vector2.ONE * temel_olcek * (HOVER_SCALE if ustunde else 1.0)
+		_tween.tween_property(self, "scale", hedef, 0.12)
