@@ -197,8 +197,10 @@ func _boss_ipucu() -> String:
 		satirlar.append(Ipucu.SOZLUK["isaret"])
 	if b.zayiflik > 0:
 		satirlar.append(Ipucu.SOZLUK["zayif"])
-	if b.sersem:
+	if b.sersem or b.bagisik:
 		satirlar.append(Ipucu.SOZLUK["sersem"])
+	if motor.tur > SavasMotoru.OFKE_TURU:
+		satirlar.append(Ipucu.SOZLUK["ofke"])
 	satirlar.append("Sağdaki turuncu balon bir sonraki hamlesini gösterir.")
 	return "\n".join(satirlar)
 

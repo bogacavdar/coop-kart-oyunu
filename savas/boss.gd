@@ -17,6 +17,8 @@ var zirh := 0
 var isaret := 0
 var zayiflik := 0
 var sersem := false
+## Bir önceki tur sersemlediyse bu tur sersemletilemez
+var bagisik := false
 var hamleler: Array = []
 var gorunum: Dictionary = {}
 ## Bir sonraki hamle
@@ -46,4 +48,6 @@ func durum_metni() -> String:
 		parcalar.append("Zayıf -%d" % zayiflik)
 	if sersem:
 		parcalar.append("Sersem")
+	elif bagisik:
+		parcalar.append("Sersemlemeye bağışık")
 	return " · ".join(parcalar)

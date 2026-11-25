@@ -178,8 +178,11 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 			_boss_durum_olayi(olaylar, "Düşman zayıfladı: hasarı -%d" % boss.zayiflik)
 
 		CardData.Etki.SERSEMLET:
-			boss.sersem = true
-			_boss_durum_olayi(olaylar, "Düşman kıpırdayamıyor!")
+			if boss.bagisik:
+				_boss_durum_olayi(olaylar, "Düşman bu tur bağışık, sersemlemedi!")
+			else:
+				boss.sersem = true
+				_boss_durum_olayi(olaylar, "Düşman kıpırdayamıyor!")
 
 		CardData.Etki.AGGRO:
 			aggro = o.no
@@ -296,10 +299,17 @@ func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary]) -> void:
 
 # --- Tur başlangıcı ve boss niyeti -----------------------------------------
 
+const OFKE_TURU := 15
+
+
 func _tur_baslat() -> void:
 	boss.isaret = 0
 	boss.zayiflik = 0
+	boss.bagisik = boss.sersem
 	boss.sersem = false
+	# Savaş çok uzarsa düşman öfkelenir: her tur güçlenir (sonsuz savaşı önler)
+	if tur > OFKE_TURU:
+		boss.guc += 3
 	aggro = -1
 	# Savaş uzadıkça boss sertleşir
 	if tur > 1 and tur % 2 == 1:

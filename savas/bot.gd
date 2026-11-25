@@ -55,6 +55,8 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 			return [float(mini(kart.deger, niyet_hasar) * etkilenen) * 1.2, -1]
 
 		CardData.Etki.SERSEMLET:
+			if motor.boss.bagisik or motor.boss.sersem:
+				return [0.0, -1]
 			return [float(niyet_hasar * etkilenen) * 0.8, -1]
 
 		CardData.Etki.AGGRO:
