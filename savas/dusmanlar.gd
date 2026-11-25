@@ -109,11 +109,11 @@ static func tanim(id: String) -> Dictionary:
 				],
 				"gorunum": {"sekil": "kara_sovalye", "renk": "#5a5a6e", "goz": "#ff3a3a", "yaricap": 84.0}}
 		"kemik_ejderi":
-			return {"id": id, "ad": "Kemik Ejderi", "tip": "elit", "can": 70, "guc_artisi": 2,
+			return {"id": id, "ad": "Kemik Ejderi", "tip": "elit", "can": 66, "guc_artisi": 2,
 				"hamleler": [
-					{"tur": "alan", "ad": "Çürük Nefes", "hasar": 22, "agirlik": 35},
-					{"tur": "tekil", "ad": "Kemik Pençe", "hasar": 48, "agirlik": 35},
-					{"tur": "emme", "ad": "Ruh Isırığı", "hasar": 30, "agirlik": 30},
+					{"tur": "alan", "ad": "Çürük Nefes", "hasar": 17, "agirlik": 35},
+					{"tur": "tekil", "ad": "Kemik Pençe", "hasar": 40, "agirlik": 35},
+					{"tur": "emme", "ad": "Ruh Isırığı", "hasar": 25, "agirlik": 30},
 				],
 				"gorunum": {"sekil": "kemik_ejder", "renk": "#d8d0b8", "goz": "#9dff6a", "yaricap": 86.0}}
 		"lich_kral":
