@@ -6,7 +6,7 @@
 script = ExtResource("1_card")
 id = &"kontrol_zayif_nokta"
 kart_adi = "Zayıf Nokta"
-aciklama = "Boss'u işaretler: bu tur her saldırı +{deger} hasar verir."
+aciklama = "Düşmanı işaretler: bu tur her saldırı +{deger} hasar verir."
 mana = 1
 sinif = 3
 tip = 1

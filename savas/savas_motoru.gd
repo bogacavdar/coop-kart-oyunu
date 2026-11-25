@@ -148,21 +148,21 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 
 		CardData.Etki.ISARET:
 			boss.isaret += kart.deger
-			_boss_durum_olayi(olaylar, "Boss işaretlendi: saldırılar +%d" % boss.isaret)
+			_boss_durum_olayi(olaylar, "Düşman işaretlendi: saldırılar +%d" % boss.isaret)
 
 		CardData.Etki.ZAYIFLAT:
 			boss.zayiflik += kart.deger
-			_boss_durum_olayi(olaylar, "Boss zayıfladı: hasarı -%d" % boss.zayiflik)
+			_boss_durum_olayi(olaylar, "Düşman zayıfladı: hasarı -%d" % boss.zayiflik)
 
 		CardData.Etki.SERSEMLET:
 			boss.sersem = true
-			_boss_durum_olayi(olaylar, "Boss sersemledi!")
+			_boss_durum_olayi(olaylar, "Düşman kıpırdayamıyor!")
 
 		CardData.Etki.AGGRO:
 			aggro = o.no
 			o.zirh += kart.deger
 			_oyuncu_olayi(olaylar, "zirh", o, kart.deger)
-			_boss_durum_olayi(olaylar, "%s boss'un dikkatini çekti" % o.ad)
+			_boss_durum_olayi(olaylar, "%s düşmanın dikkatini çekti" % o.ad)
 
 		CardData.Etki.ZIRH:
 			for t in _hedefler(o, kart, h["hedef_oyuncu"]):

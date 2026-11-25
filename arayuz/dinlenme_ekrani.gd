@@ -18,7 +18,7 @@ func _ready() -> void:
 	var b := Arayuz.etiket(self, 42, "Kamp Ateşi", Color("#ffb347"))
 	b.position = Vector2(0, 90)
 	b.size = Vector2(1280, 50)
-	var a := Arayuz.etiket(self, 17, "Yıldızların altında kısa bir mola. Ne yapacaksınız?", Color("#c8c0e0"))
+	var a := Arayuz.etiket(self, 17, "Kamp ateşinin başında kısa bir mola. Ne yapacaksınız?", Color("#c8c0e0"))
 	a.position = Vector2(0, 145)
 	a.size = Vector2(1280, 24)
 

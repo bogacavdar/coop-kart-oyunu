@@ -152,7 +152,7 @@ func _lejant() -> void:
 		"elit": "Elit: zor, +5 max can",
 		"dinlenme": "Dinlen: can veya kart güçlendir",
 		"gizem": "?: rastgele olay",
-		"boss": "BOSS: Satürn'ün Gölgesi",
+		"boss": "BOSS: Kızıl Ejder",
 	}
 	for tip in aciklamalar:
 		var l := Arayuz.etiket(dikey, 13, aciklamalar[tip], (TIP_BILGI[tip][1] as Color).lightened(0.3))

@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_card")
 id = &"kontrol_kader_cizgisi"
-kart_adi = "Kader Çizgisi"
-aciklama = "Boss'u işaretler: bu tur her saldırı +{deger} hasar verir."
+kart_adi = "Avcı İşareti"
+aciklama = "Düşmanı işaretler: bu tur her saldırı +{deger} hasar verir."
 mana = 2
 sinif = 3
 tip = 1

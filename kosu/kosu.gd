@@ -23,7 +23,7 @@ const KATMAN_TIPLERI := [
 	["dinlenme"],
 	["boss"],
 ]
-const GIZEMLER: Array[String] = ["yildiz_kuyusu", "kara_ayna", "gezgin_falci"]
+const GIZEMLER: Array[String] = ["peri_pinari", "kara_ayna", "yasli_munzevi"]
 const MIN_DESTE := 6
 
 var rng := RandomNumberGenerator.new()
@@ -234,25 +234,25 @@ func _herkese_hasar(miktar: int) -> void:
 func gizem_sec() -> Dictionary:
 	var id: String = GIZEMLER[rng.randi_range(0, GIZEMLER.size() - 1)]
 	match id:
-		"yildiz_kuyusu":
-			return {"id": id, "baslik": "Yıldız Kuyusu",
-				"metin": "Dibinde yıldızların parladığı bir kuyu buldunuz. Suyu ışıl ışıl ve sıcacık.",
+		"peri_pinari":
+			return {"id": id, "baslik": "Peri Pınarı",
+				"metin": "Ormanın derinliklerinde, etrafında perilerin dans ettiği ışıl ışıl bir pınar buldunuz.",
 				"secenekler": [
 					{"id": "ic", "metin": "İç: herkes 12 can iyileşir"},
-					{"id": "dilek", "metin": "Dilek tut: herkes rastgele bir kart kazanır, ama 6 can kaybeder"},
+					{"id": "dilek", "metin": "Pınara altın at, dilek tut: herkes rastgele bir kart kazanır, ama 6 can kaybeder"},
 				]}
 		"kara_ayna":
 			return {"id": id, "baslik": "Kara Ayna",
-				"metin": "Yolun ortasında duran kapkara bir ayna, size geleceğinizi göstermeyi teklif ediyor.",
+				"metin": "Terk edilmiş bir kulenin tepesinde duran kapkara bir ayna, size geleceğinizi göstermeyi teklif ediyor.",
 				"secenekler": [
 					{"id": "bak", "metin": "Bak: herkesin rastgele bir kartı güçlenir, ama herkes 8 can kaybeder"},
 					{"id": "gec", "metin": "Arkana bakmadan geç"},
 				]}
 		_:
-			return {"id": "gezgin_falci", "baslik": "Gezgin Falcı",
-				"metin": "Yaşlı bir falcı kahve fincanınıza bakmayı teklif ediyor. \"Fazlalıklarından kurtul\" diyor.",
+			return {"id": "yasli_munzevi", "baslik": "Yaşlı Münzevi",
+				"metin": "Mağarasında tek başına yaşayan yaşlı bir münzevi yükünüzü hafifletmeyi teklif ediyor. \"Gereksiz olanı bırak\" diyor.",
 				"secenekler": [
-					{"id": "fal", "metin": "Fal baktır: destenden bir kartı çıkar (botlar da en zayıf kartını çıkarır)", "deste_sec": "cikar"},
+					{"id": "fal", "metin": "Bilgeliğini dinle: destenden bir kartı çıkar (botlar da en zayıf kartını çıkarır)", "deste_sec": "cikar"},
 					{"id": "gec", "metin": "Teşekkür edip yola devam et"},
 				]}
 
@@ -264,14 +264,14 @@ func gizem_uygula(secenek_id: String) -> String:
 		"ic":
 			for v in takim:
 				v["can"] = mini(v["max_can"], v["can"] + 12)
-			return "Su damarlarınızda yıldız gibi parladı. Herkes 12 can iyileşti."
+			return "Peri suyu yorgunluğunuzu aldı. Herkes 12 can iyileşti."
 		"dilek":
 			for v in takim:
 				var secenekler := odul_secenekleri(v["sinif"])
 				if not secenekler.is_empty():
 					kart_ekle(v["sinif"], secenekler[rng.randi_range(0, secenekler.size() - 1)])
 			_herkese_hasar(6)
-			return "Kuyu dileğinizi kabul etti ama bedelini aldı. Herkes yeni bir kart kazandı, 6 can kaybetti."
+			return "Periler dileğinizi kabul etti ama bedelini aldı. Herkes yeni bir kart kazandı, 6 can kaybetti."
 		"bak":
 			for v in takim:
 				_rastgele_guclendir(v["sinif"])
@@ -279,5 +279,5 @@ func gizem_uygula(secenek_id: String) -> String:
 			return "Aynadaki görüntü içinizi ürpertti ama güçlendirdi. Herkesin bir kartı güçlendi, herkes 8 can kaybetti."
 		"fal":
 			botlar_kart_cikarsin()
-			return "Falcı fincanı kapattı. \"Hafiflediniz\" dedi ve gülümsedi."
+			return "Münzevi başını salladı. \"Hafiflediniz\" dedi ve mağarasına çekildi."
 	return "Yolunuza devam ettiniz."

@@ -6,7 +6,7 @@
 script = ExtResource("1_card")
 id = &"tank_meydan_okuma"
 kart_adi = "Meydan Okuma"
-aciklama = "Boss'un tekil saldırısını üstüne çeker ve {deger} zırh kazanır."
+aciklama = "Düşmanın tekil saldırısını üstüne çeker ve {deger} zırh kazanır."
 mana = 3
 sinif = 0
 tip = 0

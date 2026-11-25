@@ -36,21 +36,21 @@ func _sinif_secimi_goster() -> void:
 	perde.size = size
 	ekran.add_child(perde)
 
-	var b := Arayuz.etiket(ekran, 48, "Gözün Ötesi: Satürn'ün Gölgesi", Arayuz.ALTIN)
+	var b := Arayuz.etiket(ekran, 48, "Ejderin İni", Arayuz.ALTIN)
 	b.position = Vector2(0, 110)
 	b.size = Vector2(1280, 60)
 	var a := Arayuz.etiket(ekran, 18,
-		"Sınıfını seç. Diğer üç sınıfı bot takım arkadaşların oynayacak. Haritada ilerleyip Satürn'ün Gölgesi'ni yenin.",
+		"Sınıfını seç. Diğer üç sınıfı bot takım arkadaşların oynayacak. Dağın derinliklerine inin ve Kızıl Ejder'i yenin.",
 		Color("#d8d0f0"))
 	a.position = Vector2(140, 180)
 	a.size = Vector2(1000, 50)
 	a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	var aciklamalar := {
-		CardData.Sinif.TANK: "Boss'un saldırılarını üstüne çeker, takımı zırhla korur.",
-		CardData.Sinif.DESTEK: "Takımı iyileştirir, kalkan verir.",
-		CardData.Sinif.HASARCI: "Düşmanı eritir. Kırılgandır.",
-		CardData.Sinif.KONTROLCU: "Düşmanı işaretler, zayıflatır, durdurur.",
+		CardData.Sinif.TANK: "Düşmanın saldırılarını üstüne çeker, takımı kalkanıyla korur.",
+		CardData.Sinif.DESTEK: "Şifa büyüleriyle takımı iyileştirir ve korur.",
+		CardData.Sinif.HASARCI: "Ateş ve buz büyüleriyle düşmanı eritir. Kırılgandır.",
+		CardData.Sinif.KONTROLCU: "Düşmanı işaretler, zehirli oklarla zayıflatır, okla yere çiviler.",
 	}
 	for i in Kosu.SINIFLAR.size():
 		var s := Kosu.SINIFLAR[i]
@@ -122,7 +122,7 @@ func _kosu_sonu_goster() -> void:
 		Color("#5aff8a") if zafer else Color("#ff5a5a"))
 	b.position = Vector2(0, 200)
 	b.size = Vector2(1280, 80)
-	var metin := "Satürn'ün Gölgesi yenildi! Yıldızlar sizin için parlıyor." if zafer \
+	var metin := "Kızıl Ejder yenildi! Ozanlar bu zaferi yıllarca anlatacak." if zafer \
 		else "Takım %d. katmanda düştü." % (kosu.katman + 1)
 	var a := Arayuz.etiket(ekran, 20, metin + "\nKazanılan savaş: %d" % kosu.kazanilan_savas, Color("#d8d0f0"))
 	a.position = Vector2(0, 300)

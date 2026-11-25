@@ -69,8 +69,8 @@ static func tip_adi(t: Tip) -> String:
 
 static func sinif_adi(s: Sinif) -> String:
 	match s:
-		Sinif.TANK: return "Tank"
-		Sinif.DESTEK: return "Destek"
-		Sinif.HASARCI: return "Hasarcı"
-		Sinif.KONTROLCU: return "Kontrolcü"
+		Sinif.TANK: return "Savaşçı"
+		Sinif.DESTEK: return "Şifacı"
+		Sinif.HASARCI: return "Büyücü"
+		Sinif.KONTROLCU: return "Okçu"
 	return ""

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_card")
 id = &"tank_toprak_siperi"
-kart_adi = "Toprak Siperi"
+kart_adi = "Kalkan Hattı"
 aciklama = "Tüm takıma {deger} zırh verir."
 mana = 4
 sinif = 0

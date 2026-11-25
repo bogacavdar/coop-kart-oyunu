@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_card")
 id = &"kontrol_ay_tutulmasi"
-kart_adi = "Ay Tutulması"
-aciklama = "Boss bu tur saldıramaz."
+kart_adi = "Ağ Oku"
+aciklama = "Düşman bu tur saldıramaz."
 mana = 4
 sinif = 3
 tip = 1
