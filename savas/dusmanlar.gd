@@ -43,8 +43,8 @@ static func tanim(id: String) -> Dictionary:
 		"ay_cadisi":
 			return {"id": id, "ad": "Ay Cadısı", "tip": "elit", "can": 58, "guc_artisi": 2,
 				"hamleler": [
-					{"tur": "alan", "ad": "Ay Tutulması", "hasar": 23, "agirlik": 35},
-					{"tur": "tekil", "ad": "Lanet", "hasar": 48, "agirlik": 30},
+					{"tur": "alan", "ad": "Ay Tutulması", "hasar": 18, "agirlik": 35},
+					{"tur": "tekil", "ad": "Lanet", "hasar": 38, "agirlik": 30},
 					{"tur": "iyiles", "ad": "Ay Işığı İksiri", "miktar": 32, "agirlik": 15},
 					{"tur": "guc", "ad": "Dolunay", "miktar": 4, "agirlik": 20},
 				],
@@ -53,9 +53,9 @@ static func tanim(id: String) -> Dictionary:
 			return {"id": id, "ad": "Güneş Muhafızı", "tip": "elit", "can": 62, "guc_artisi": 2,
 				"hamleler": [
 					{"tur": "kalkan", "ad": "Güneş Kalkanı", "miktar": 30, "agirlik": 25},
-					{"tur": "tekil", "ad": "Alev Kılıcı", "hasar": 59, "agirlik": 30, "ilk_tur_yok": true},
-					{"tur": "alan", "ad": "Güneş Patlaması", "hasar": 22, "agirlik": 30},
-					{"tur": "cift", "ad": "Çifte Işın", "hasar": 29, "agirlik": 15},
+					{"tur": "tekil", "ad": "Alev Kılıcı", "hasar": 45, "agirlik": 30, "ilk_tur_yok": true},
+					{"tur": "alan", "ad": "Güneş Patlaması", "hasar": 17, "agirlik": 30},
+					{"tur": "cift", "ad": "Çifte Işın", "hasar": 23, "agirlik": 15},
 				],
 				"gorunum": {"renk": "#5a3010", "goz": "#fff0a0", "halka": true, "yaricap": 80.0}}
 		_:
