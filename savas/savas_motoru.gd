@@ -10,7 +10,7 @@ extends RefCounted
 const EL_BOYUTU := 4
 const MAKS_MANA := 6
 const KOPYA_SAYISI := 2
-const BOSS_CANI_OYUNCU_BASI := 50
+const BOSS_CANI_OYUNCU_BASI := 85
 
 var oyuncular: Array[Oyuncu] = []
 var boss: Boss
@@ -242,7 +242,7 @@ func _tur_baslat() -> void:
 		boss.guc += 2
 	for o in oyuncular:
 		o.zirh = 0
-		o.mana = mini(tur + 1, MAKS_MANA)
+		o.mana = mini(tur, MAKS_MANA)
 		if o.hayatta():
 			o.kart_cek(EL_BOYUTU - o.el.size())
 	_niyet_belirle()
@@ -256,15 +256,15 @@ func _niyet_belirle() -> void:
 	var zar := rng.randi_range(1, 100)
 	var h := 0
 	if zar <= 45 or tur == 1:
-		h = 16 + boss.guc
+		h = 18 + boss.guc
 		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
 			"metin": "Kuyruklu Yıldız -> %s (%d hasar)" % [hedef.ad, h]}
 	elif zar <= 65:
-		h = 26 + boss.guc
+		h = 28 + boss.guc
 		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
 			"metin": "Kara Delik -> %s (%d hasar)" % [hedef.ad, h]}
 	elif zar <= 90:
-		h = 9 + int(boss.guc / 2.0)
+		h = 10 + int(boss.guc / 2.0)
 		boss.niyet = {"tur": "alan", "hasar": h,
 			"metin": "Satürn Halkası -> Tüm takım (%d hasar)" % h}
 	else:
