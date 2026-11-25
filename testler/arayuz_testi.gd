@@ -27,6 +27,15 @@ func _process(delta: float) -> bool:
 	if not sahne.oynatiliyor:
 		var o: Oyuncu = motor.oyuncular[sahne.insan]
 		if o.hayatta():
+			# Önce hedef seçme akışını dene: elde müttefik kartı varsa karta "tıkla", sonra koltuğa
+			for kart in o.el:
+				if kart.hedef == CardData.Hedef.MUTTEFIK and kart.mana <= o.kalan_mana():
+					var v := CardView.new()
+					v.setup(kart)
+					sahne._on_kart_tiklandi(v)
+					sahne._on_koltuk_tiklandi((sahne.insan + 1) % 4)
+					v.free()
+					break
 			Bot.planla(motor, o)
 		sahne._hepsini_guncelle()
 		sahne._turu_oyna()

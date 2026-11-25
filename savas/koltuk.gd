@@ -18,6 +18,8 @@ var _bar: ProgressBar
 var _deger: Label
 var _plan: Label
 var _mana_metni := ""
+var _nabiz: Tween
+var _hedef_rozeti: Label
 
 
 func _init(p_no: int, p_renk: Color, p_yatay: bool) -> void:
@@ -75,6 +77,20 @@ func _init(p_no: int, p_renk: Color, p_yatay: bool) -> void:
 	add_child(_bar)
 
 	_deger = _etiket(Rect2(x0, y0 + 41, gen, 18), 13, hiza)
+	_hedef_rozeti = Label.new()
+	_hedef_rozeti.text = "HEDEF"
+	_hedef_rozeti.add_theme_font_size_override("font_size", 13)
+	_hedef_rozeti.add_theme_color_override("font_color", Color("#0b0915"))
+	var rozet_stil := StyleBoxFlat.new()
+	rozet_stil.bg_color = Color("#7dffa0")
+	rozet_stil.set_corner_radius_all(6)
+	rozet_stil.set_content_margin_all(3)
+	_hedef_rozeti.add_theme_stylebox_override("normal", rozet_stil)
+	_hedef_rozeti.position = _portre.position + Vector2(PORTRE / 2.0 - 24, -16)
+	_hedef_rozeti.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hedef_rozeti.visible = false
+	add_child(_hedef_rozeti)
+
 	_plan = _etiket(Rect2(x0, y0 + 60, gen, 38), 12, hiza)
 	_plan.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_plan.add_theme_color_override("font_color", Color("#d8d0f0"))
@@ -114,6 +130,7 @@ func guncelle(o: Oyuncu, sen: bool, hedef_modu: bool, plan: String) -> void:
 		modulate = Color(1, 1, 1, 0.35)
 		_plan.text = "Düştü"
 
+	_nabiz_ayarla(hedef_modu and o.hayatta())
 	if hedef_modu and o.hayatta():
 		_portre_stil.border_color = Color("#7dffa0")
 		_portre_stil.set_border_width_all(6)
@@ -123,6 +140,21 @@ func guncelle(o: Oyuncu, sen: bool, hedef_modu: bool, plan: String) -> void:
 	else:
 		_portre_stil.border_color = renk
 		_portre_stil.set_border_width_all(4)
+
+
+func _nabiz_ayarla(acik: bool) -> void:
+	_hedef_rozeti.visible = acik
+	if acik:
+		if _nabiz and _nabiz.is_valid():
+			return
+		_nabiz = _portre.create_tween().set_loops()
+		_nabiz.tween_property(_portre, "scale", Vector2.ONE * 1.12, 0.35)
+		_nabiz.tween_property(_portre, "scale", Vector2.ONE, 0.35)
+	else:
+		if _nabiz:
+			_nabiz.kill()
+			_nabiz = null
+		_portre.scale = Vector2.ONE
 
 
 func degerleri_goster(can: int, max_can: int, zirh: int) -> void:

@@ -33,6 +33,8 @@ var _buton: Button
 var _koltuklar: Array[Koltuk] = []
 var _el_katmani: Control
 var _efekt_katmani: Control
+var _hedef_bandi: PanelContainer
+var _hedef_yazisi: Label
 
 
 func _ready() -> void:
@@ -185,6 +187,19 @@ func _arayuzu_kur() -> void:
 	_buton.pressed.connect(_turu_oyna)
 	add_child(_buton)
 
+	# Hedef seçme bandı (müttefik kartı seçilince görünür)
+	_hedef_bandi = PanelContainer.new()
+	_hedef_bandi.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hedef_bandi.add_theme_stylebox_override("panel", _kutu_stili(Color(0.02, 0.12, 0.06, 0.92), Color("#7dffa0")))
+	_hedef_bandi.z_index = 60
+	_hedef_bandi.visible = false
+	add_child(_hedef_bandi)
+	_hedef_yazisi = Label.new()
+	_hedef_yazisi.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hedef_yazisi.add_theme_font_size_override("font_size", 19)
+	_hedef_yazisi.add_theme_color_override("font_color", Color("#c8ffd8"))
+	_hedef_bandi.add_child(_hedef_yazisi)
+
 	_el_katmani = Control.new()
 	_el_katmani.size = Vector2(1280, 720)
 	_el_katmani.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -254,7 +269,18 @@ func _hepsini_guncelle() -> void:
 		_koltuklar[o.no].guncelle(o, o.no == insan, hedef_bekleyen != null, _plan_metni(o))
 	_el_guncelle()
 	_bilgi_guncelle()
+	_hedef_bandi_guncelle()
 	_buton.disabled = oynatiliyor or motor.bitti
+
+
+func _hedef_bandi_guncelle() -> void:
+	_hedef_bandi.visible = hedef_bekleyen != null and not oynatiliyor
+	if not _hedef_bandi.visible:
+		return
+	var ne := "zırh" if hedef_bekleyen.etki == CardData.Etki.ZIRH else "can"
+	_hedef_yazisi.text = "%s: kime %s vereceksin?\nYeşil parlayan bir koltuğa tıkla  (iptal: sağ tık)" % [hedef_bekleyen.kart_adi, ne]
+	_hedef_bandi.reset_size()
+	_hedef_bandi.position = Vector2(640, 182) - _hedef_bandi.size / 2.0
 
 
 func _plan_metni(o: Oyuncu) -> String:
@@ -337,6 +363,18 @@ func _on_kart_tiklandi(v: CardView) -> void:
 	hedef_bekleyen = null
 	motor.kart_sec(insan, kart)
 	_hepsini_guncelle()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if hedef_bekleyen == null:
+		return
+	var iptal := event.is_action_pressed("ui_cancel")
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		iptal = true
+	if iptal:
+		hedef_bekleyen = null
+		_hepsini_guncelle()
+		get_viewport().set_input_as_handled()
 
 
 func _on_koltuk_tiklandi(no: int) -> void:

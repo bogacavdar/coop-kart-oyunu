@@ -171,6 +171,10 @@ func _on_hover(ustunde: bool) -> void:
 	if _tween:
 		_tween.kill()
 	z_index = 50 if ustunde else temel_z
+	# Godot tıklamayı ağaçtaki sıraya göre dağıtır: üstüne gelinen kartı en öne al ki
+	# yanındaki (özellikle seçilip yukarı kalkmış) kart tıklamayı çalmasın.
+	if ustunde and get_parent() != null:
+		move_to_front()
 	_tween = create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if yukselme > 0.0:
 		var olcek := 1.0 if ustunde else temel_olcek
