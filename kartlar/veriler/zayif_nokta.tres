@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"zayif_nokta"
+kart_adi = "Zayıf Nokta"
+aciklama = "Boss'u işaretler. Bu tur boss'a vurulan saldırılar +{deger} hasar verir."
+mana = 1
+sinif = 3
+tip = 1
+hedef = 0
+deger = 3

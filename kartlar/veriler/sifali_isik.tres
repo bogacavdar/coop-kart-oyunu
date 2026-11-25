@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"sifali_isik"
+kart_adi = "Şifalı Işık"
+aciklama = "Bir müttefiki {deger} can iyileştirir."
+mana = 2
+sinif = 1
+tip = 3
+hedef = 1
+deger = 10
