@@ -55,6 +55,42 @@ jobs:
           mkdir -p build/web
           godot --headless --export-release "Web" build/web/index.html 2>&1 | tee export.log
 
+      - name: Windows sürümünü derle
+        continue-on-error: true
+        run: |
+          mkdir -p build/windows build/web/indir
+          godot --headless --export-release "Windows" build/windows/EjderinIni.exe 2>&1 | tee windows.log
+          ls -la build/windows
+          (cd build/windows && zip -9 -r ../web/indir/EjderinIni-Windows.zip .) || python3 -c "import shutil; shutil.make_archive('build/web/indir/EjderinIni-Windows', 'zip', 'build/windows')"
+
+      - name: Android sürümünü (APK) derle
+        continue-on-error: true
+        run: |
+          mkdir -p ~/.config build/android build/web/indir
+          cp -r /root/.config/godot ~/.config/ 2>/dev/null || true
+          ls ~/.config/godot || true
+          godot --headless --export-debug "Android" build/android/EjderinIni.apk 2>&1 | tee android.log
+          ls -la build/android
+          cp build/android/EjderinIni.apk build/web/indir/
+
+      - name: İndirme sayfası
+        run: |
+          mkdir -p build/web/indir
+          cat > build/web/indir/index.html <<'HTML'
+          <!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Ejderin İni - İndir</title>
+          <style>body{background:#15110d;color:#e8e0f8;font-family:sans-serif;text-align:center;padding:40px}
+          a{display:block;margin:18px auto;max-width:340px;padding:18px;background:#5c4720;color:#ffe39a;border:2px solid #e8c27a;border-radius:12px;text-decoration:none;font-size:20px}
+          small{color:#a8a0c0}</style></head><body>
+          <h1 style="color:#e8c27a">Ejderin İni</h1>
+          <a href="../">Tarayıcıda oyna</a>
+          <a href="EjderinIni-Windows.zip">Windows (.zip)</a>
+          <a href="EjderinIni.apk">Android (.apk)</a>
+          <small>Windows: zip'i aç, EjderinIni.exe'yi çalıştır. Android: APK'yı indirip yükle (bilinmeyen kaynaklara izin vermen gerekebilir).</small>
+          </body></html>
+          HTML
+          ls -la build/web/indir
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web

@@ -28,7 +28,11 @@ func _ready() -> void:
 		v.setup(_kartlar[i])
 		add_child(v)
 		v.yerlestir(Vector2(640 + (i - (_kartlar.size() - 1) / 2.0) * 270, 360), 1.0)
-		v.card_clicked.connect(func(_v): secildi.emit(_kartlar[i]))
+		v.card_clicked.connect(func(_v):
+			Ses.cal(self, "sec")
+			Ipucu.gizle()
+			secildi.emit(_kartlar[i])
+		)
 
 	var gec := Arayuz.buton("Kart alma, geç", Vector2(220, 50), Color("#2a2450"), Color("#7a6fd0"), 17)
 	gec.position = Vector2(530, 580)

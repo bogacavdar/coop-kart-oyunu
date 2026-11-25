@@ -47,6 +47,7 @@ func _init() -> void:
 	pivot_offset = CARD_SIZE / 2.0
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build()
+	Ipucu.baglan(self, func(): return Ipucu.kart_metni(data) if data else "")
 	mouse_entered.connect(_on_hover.bind(true))
 	mouse_exited.connect(_on_hover.bind(false))
 	resized.connect(func(): pivot_offset = size / 2.0)

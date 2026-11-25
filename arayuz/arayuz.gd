@@ -71,6 +71,7 @@ static func buton(metin: String, boyut: Vector2, renk: Color = Color("#5c4720"),
 	b.add_theme_stylebox_override("pressed", kutu_stili(renk.darkened(0.3), kenar))
 	b.add_theme_stylebox_override("disabled", kutu_stili(renk.darkened(0.5), kenar.darkened(0.5)))
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.pressed.connect(func(): Ses.cal(b, "tikla"))
 	var cerceve := susle(b, kenar.lightened(0.15), BUTON_CERCEVESI, 4.0)
 	if cerceve:
 		cerceve.self_modulate.a = 0.85

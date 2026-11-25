@@ -72,6 +72,12 @@ func _arayuzu_kur() -> void:
 	_boss.ayarla(motor.boss.gorunum)
 	_boss.yerlestir(BOSS_MERKEZI)
 
+	var boss_alani := Control.new()
+	boss_alani.position = BOSS_MERKEZI - Vector2(150, 110)
+	boss_alani.size = Vector2(300, 200)
+	add_child(boss_alani)
+	Ipucu.baglan(boss_alani, _boss_ipucu)
+
 	_boss_ad = _etiket_at(Rect2(440, 386, 400, 30), 24)
 	_boss_ad.add_theme_color_override("font_color", Color("#e8c27a"))
 	_boss_bar = ProgressBar.new()
@@ -89,7 +95,8 @@ func _arayuzu_kur() -> void:
 	# Niyet balonu
 	_niyet_kutu = PanelContainer.new()
 	_niyet_kutu.position = Vector2(790, 150)
-	_niyet_kutu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_niyet_kutu.mouse_filter = Control.MOUSE_FILTER_STOP
+	Ipucu.baglan(_niyet_kutu, _niyet_ipucu)
 	_niyet_kutu.add_theme_stylebox_override("panel", _kutu_stili(Color(0.1, 0.05, 0.02, 0.85), Color("#ffb347")))
 	add_child(_niyet_kutu)
 	Arayuz.susle(_niyet_kutu, Color("#ffb347"), Arayuz.PANEL_CERCEVESI, -6.0)
@@ -140,6 +147,7 @@ func _arayuzu_kur() -> void:
 	_buton.add_theme_stylebox_override("pressed", _kutu_stili(Color("#3d2f15"), Color("#e8c27a")))
 	_buton.add_theme_stylebox_override("disabled", _kutu_stili(Color("#2a2418"), Color("#5c4720")))
 	_buton.pressed.connect(_turu_oyna)
+	Ipucu.baglan(_buton, func(): return Ipucu.SOZLUK["sira"])
 	add_child(_buton)
 	Arayuz.susle(_buton, Color("#ffe39a"), Arayuz.BUTON_CERCEVESI, 4.0)
 
@@ -167,6 +175,44 @@ func _arayuzu_kur() -> void:
 	_efekt_katmani.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_efekt_katmani.z_index = 100
 	add_child(_efekt_katmani)
+
+
+func _boss_ipucu() -> String:
+	if motor == null:
+		return ""
+	var b := motor.boss
+	var unvan := {"normal": "Düşman", "elit": "Elit düşman", "boss": "Boss"}
+	var satirlar: PackedStringArray = ["[b]%s[/b]  ·  %s  ·  Can %d/%d" % [b.ad, unvan.get(b.tip, ""), b.can, b.max_can]]
+	if b.zirh > 0:
+		satirlar.append(Ipucu.SOZLUK["kalkan"])
+	if b.guc > 0:
+		satirlar.append(Ipucu.SOZLUK["guc"])
+	if b.isaret > 0:
+		satirlar.append(Ipucu.SOZLUK["isaret"])
+	if b.zayiflik > 0:
+		satirlar.append(Ipucu.SOZLUK["zayif"])
+	if b.sersem:
+		satirlar.append(Ipucu.SOZLUK["sersem"])
+	satirlar.append("Sağdaki turuncu balon bir sonraki hamlesini gösterir.")
+	return "\n".join(satirlar)
+
+
+func _niyet_ipucu() -> String:
+	if motor == null:
+		return ""
+	var aciklama := {
+		"tekil": "Tek bir oyuncuya vurur. Savaşçının dikkat çeken kartları bu saldırıyı üstüne alır; zırh hasarı azaltır.",
+		"cift": "Aynı anda iki oyuncuya vurur. İkisine de zırh vermek iyi bir fikir.",
+		"alan": "Bütün takıma vurur. Takıma zırh ya da can veren kartlar burada parlar.",
+		"guc": "Kalıcı olarak güçlenir. Bu tur saldırmayacak: düşmana yüklenme zamanı!",
+		"kalkan": "Kendine kalkan kazanır. Kalkan bir sonraki turunuzda vuruşlarınızı emer.",
+		"iyiles": "Kendini iyileştirir. Bu tur saldırmayacak: düşmana yüklenme zamanı!",
+	}
+	var tur: String = motor.boss.niyet.get("tur", "")
+	var metin := "[b]Sıradaki hamle[/b]\n" + str(aciklama.get(tur, ""))
+	if tur in ["tekil", "cift", "alan"]:
+		metin += "\n" + Ipucu.SOZLUK["zayif"]
+	return metin
 
 
 func _etiket(ebeveyn: Control, boyut: int) -> Label:
@@ -314,6 +360,7 @@ func _on_kart_tiklandi(v: CardView) -> void:
 	if kart.mana > o.kalan_mana():
 		_bilgi.text = "Yeterli mana yok (%d gerekli, %d kaldı)." % [kart.mana, o.kalan_mana()]
 		return
+	Ses.cal(self, "sec")
 	if kart.hedef == CardData.Hedef.MUTTEFIK:
 		hedef_bekleyen = kart
 		_hepsini_guncelle()
@@ -339,6 +386,7 @@ func _on_koltuk_tiklandi(no: int) -> void:
 	if oynatiliyor or motor.bitti or hedef_bekleyen == null:
 		return
 	if motor.kart_sec(insan, hedef_bekleyen, no):
+		Ses.cal(self, "sec", -4.0, 1.2)
 		hedef_bekleyen = null
 	_hepsini_guncelle()
 
@@ -350,6 +398,8 @@ func _turu_oyna() -> void:
 		return
 	oynatiliyor = true
 	hedef_bekleyen = null
+	Ipucu.gizle()
+	Ses.cal(self, "tikla")
 	_hepsini_guncelle()
 	var olaylar := motor.turu_coz()
 	for olay in olaylar:
@@ -364,6 +414,7 @@ func _olay_oynat(olay: Dictionary) -> void:
 	var k: Koltuk = _koltuklar[olay["oyuncu"]] if olay.has("oyuncu") else null
 	match olay["tip"]:
 		"kart":
+			Ses.cal(self, "kart")
 			_log_yaz(olay["metin"])
 			_ucan_kart(olay["kart"], k.portre_merkezi())
 			k.parlat()
@@ -373,35 +424,42 @@ func _olay_oynat(olay: Dictionary) -> void:
 			_boss_can.text = "Can: %d / %d" % [olay["can"], motor.boss.max_can]
 			_boss_durum.text = olay["durum"]
 			_boss.vur()
+			Ses.cal(self, "vurus")
 			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), BOSS_MERKEZI, 34)
 			if olay["emilen"] > 0:
 				_ucan_yazi("%d kalkana çarptı" % olay["emilen"], Color("#9fc8ff"), BOSS_MERKEZI + Vector2(0, 40), 16)
 			await _bekle(0.35)
 		"boss_iyiles":
+			Ses.cal(self, "sifa", -4.0, 0.7)
 			_boss_bar.value = olay["can"]
 			_boss_can.text = "Can: %d / %d" % [olay["can"], motor.boss.max_can]
 			_ucan_yazi("+%d can" % olay["miktar"], Color("#5aff8a"), BOSS_MERKEZI, 30)
 			await _bekle(0.4)
 		"boss_durum":
 			_boss_durum.text = olay["durum"]
+			Ses.cal(self, "buyu")
 			_log_yaz("[color=#c38bff]%s[/color]" % olay["metin"])
 			_ucan_yazi(olay["metin"], Color("#c38bff"), BOSS_MERKEZI + Vector2(0, -70), 20)
 			await _bekle(0.5)
 		"zirh":
 			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			Ses.cal(self, "zirh", -8.0)
 			_ucan_yazi("+%d zırh" % olay["miktar"], Color("#6fa8ff"), k.portre_merkezi(), 22)
 			await _bekle(0.3)
 		"iyilestir":
 			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			Ses.cal(self, "sifa", -8.0)
 			_ucan_yazi("+%d can" % olay["miktar"], Color("#5aff8a"), k.portre_merkezi(), 22)
 			await _bekle(0.3)
 		"boss_hamle":
 			_niyet.text = olay["metin"]
 			_log_yaz("[color=#ffb347]%s[/color]" % olay["metin"])
 			_boss.saldir()
+			Ses.cal(self, "kukreme", -2.0)
 			await _bekle(0.5)
 		"oyuncu_hasar":
 			await _mermi(BOSS_MERKEZI, k.portre_merkezi())
+			Ses.cal(self, "darbe")
 			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
 			k.parlat()
 			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), k.portre_merkezi(), 30)
@@ -416,9 +474,11 @@ func _olay_oynat(olay: Dictionary) -> void:
 			_log_yaz("[b]Tur %d[/b] başladı." % motor.tur)
 		"zafer":
 			_log_yaz("[color=#5aff8a][b]%s yenildi![/b][/color]" % motor.boss.ad)
+			Ses.cal(self, "zafer", 0.0)
 			await _sonuc_goster(true)
 		"yenilgi":
 			_log_yaz("[color=#ff5a5a][b]Takım düştü.[/b][/color]")
+			Ses.cal(self, "yenilgi", 0.0)
 			await _sonuc_goster(false)
 
 

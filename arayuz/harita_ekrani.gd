@@ -13,6 +13,14 @@ const TIP_BILGI := {
 	"boss": ["BOSS", Color("#e8c27a")],
 }
 
+const DURAK_ACIKLAMALARI := {
+	"savas": "[b]Savaş[/b]\nNormal bir düşmanla karşılaşırsınız. Kazanınca destene bir kart seçersin.",
+	"elit": "[b]Elit Savaş[/b]\nÇok daha güçlü bir düşman. Kazanınca herkesin max canı +5 artar ve kart seçersin.",
+	"dinlenme": "[b]Kamp Ateşi[/b]\nYa takım max canının %30'u kadar iyileşir ya da bir kartını kalıcı olarak güçlendirirsin.",
+	"gizem": "[b]Gizemli Olay[/b]\nRastgele bir olay. İyi de olabilir, bedeli olan bir fırsat da.",
+	"boss": "[b]Kızıl Ejder[/b]\nKoşunun son düşmanı. Bütün takıma ateş püskürür ve savaş uzadıkça öfkelenir.",
+}
+
 var kosu: Kosu
 var _konumlar := {}
 var _cizgiler: Control
@@ -90,7 +98,12 @@ func _durak_ekle(d: Dictionary, merkez: Vector2, acik: bool) -> void:
 		var tw := b.create_tween().set_loops()
 		tw.tween_property(b, "scale", Vector2.ONE * 1.1, 0.5)
 		tw.tween_property(b, "scale", Vector2.ONE, 0.5)
-		b.pressed.connect(func(): dugum_secildi.emit(d))
+		b.pressed.connect(func():
+			Ses.cal(b, "tikla")
+			dugum_secildi.emit(d)
+		)
+	b.mouse_filter = Control.MOUSE_FILTER_STOP
+	Ipucu.baglan(b, func(): return DURAK_ACIKLAMALARI[d["tip"]])
 	add_child(b)
 
 

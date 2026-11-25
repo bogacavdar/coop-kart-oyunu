@@ -120,6 +120,29 @@ func _etiket(alan: Rect2, boyut: int, hiza: int) -> Label:
 
 
 ## Koltuğu, portresinin ortası verilen noktaya gelecek şekilde yerleştirir
+const ROLLER := {
+	CardData.Sinif.TANK: "Takımın kalkanı: düşmanın saldırılarını üstüne çeker, zırh dağıtır.",
+	CardData.Sinif.DESTEK: "Takımın şifacısı: can ve zırh verir.",
+	CardData.Sinif.HASARCI: "Takımın ana hasarı: güçlü büyülerle düşmanı eritir.",
+	CardData.Sinif.KONTROLCU: "Takımın stratejisti: düşmanı işaretler, zayıflatır, durdurur.",
+}
+var _son_oyuncu: Oyuncu
+
+
+func ipucu_metni() -> String:
+	var o := _son_oyuncu
+	if o == null:
+		return ""
+	var satirlar: PackedStringArray = [
+		"[b]%s[/b]  ·  Can %d/%d" % [o.ad, o.can, o.max_can],
+		ROLLER.get(o.sinif, ""),
+		"",
+		Ipucu.SOZLUK["zirh"],
+		Ipucu.SOZLUK["mana"],
+	]
+	return "\n".join(satirlar)
+
+
 func merkeze_yerlestir(merkez: Vector2) -> void:
 	position = merkez - (_portre.position + _portre.size / 2.0)
 
@@ -129,6 +152,9 @@ func portre_merkezi() -> Vector2:
 
 
 func guncelle(o: Oyuncu, sen: bool, hedef_modu: bool, plan: String) -> void:
+	if _son_oyuncu == null:
+		Ipucu.baglan(self, ipucu_metni)
+	_son_oyuncu = o
 	if _ikon.texture == null:
 		var yol := "res://varliklar/ikonlar/sinif_%d.svg" % o.sinif
 		if ResourceLoader.exists(yol):
