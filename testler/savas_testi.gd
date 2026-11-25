@@ -13,13 +13,13 @@ func _initialize() -> void:
 	for s in havuz:
 		kart_sayisi += havuz[s].size()
 	print("TEST: %d kart, %d sınıf yüklendi" % [kart_sayisi, havuz.size()])
-	if kart_sayisi < 40 or havuz.size() < 4:
+	if kart_sayisi < 48 or havuz.size() < 4:
 		push_error("TEST HATASI: kartlar eksik yüklendi")
 
 	_rapor("rastgele takım", havuz, 0)
 	_rapor("4 bot", havuz, 4)
 	_rapor("1 rastgele + 3 bot", havuz, 3)
-	for d in Dusmanlar.NORMAL + Dusmanlar.ELIT:
+	for d in Dusmanlar.NORMAL + Dusmanlar.ELIT + Dusmanlar.NORMAL_2 + Dusmanlar.ELIT_2 + [Dusmanlar.BOSS_2]:
 		_dusman_raporu(havuz, d)
 	_tilsim_raporu(havuz)
 	_kosu_raporu(havuz)
@@ -98,13 +98,14 @@ func _botlarla_oyna(motor: SavasMotoru) -> void:
 ## Bütün koşuyu 4 botla baştan sona oynatır
 func _kosu_raporu(havuz: Dictionary, kademe: int = 0, sayi: int = 150) -> void:
 	var kazanilan := 0
+	var bolum2 := 0
 	var toplam_tilsim := 0
 	var olum_katmani := {}
 	for i in sayi:
 		var kosu := Kosu.new(havuz, -1, kademe)
 		kosu.tilsim_ekle(kosu.tilsim_secenekleri().pick_random())
 		var adim := 0
-		while not kosu.bitti and adim < 20:
+		while not kosu.bitti and adim < 40:
 			adim += 1
 			var secenekler := kosu.gidilebilir()
 			if secenekler.is_empty():
@@ -117,6 +118,13 @@ func _kosu_raporu(havuz: Dictionary, kademe: int = 0, sayi: int = 150) -> void:
 					var motor := SavasMotoru.new(kosu.savas_kurulumu(d["tip"]))
 					_botlarla_oyna(motor)
 					kosu.savas_sonucu(motor, d["tip"])
+					if kosu.bolum_gecisi_bekliyor:
+						bolum2 += 1
+						kosu.sonraki_bolume_gec()
+						var bt := kosu.tilsim_secenekleri()
+						if not bt.is_empty():
+							kosu.tilsim_ekle(bt.pick_random())
+						continue
 					if not kosu.bitti:
 						kosu.botlara_odul_ver()
 						if d["tip"] == "elit":
@@ -137,14 +145,15 @@ func _kosu_raporu(havuz: Dictionary, kademe: int = 0, sayi: int = 150) -> void:
 		if kosu.kazandi:
 			kazanilan += 1
 		else:
-			olum_katmani[kosu.katman] = olum_katmani.get(kosu.katman, 0) + 1
+			var yer := "%d-%d" % [kosu.bolum, kosu.katman]
+			olum_katmani[yer] = olum_katmani.get(yer, 0) + 1
 		toplam_tilsim += kosu.tilsimlar.size()
 		for v in kosu.takim:
 			for k in v["deste"]:
 				if not (k is CardData):
 					push_error("TEST HATASI: destede geçersiz kart")
-	print("TEST: KOŞU kademe %d -> 4 bot %d/%d kazandı; ort. %.1f tılsım; düşülen katmanlar: %s" % [
-		kademe, kazanilan, sayi, toplam_tilsim / float(sayi), str(olum_katmani)])
+	print("TEST: KOŞU kademe %d -> 4 bot: %d/%d 2. bölüme ulaştı, %d/%d koşuyu kazandı; ort. %.1f tılsım; düşülen yerler (bölüm-katman): %s" % [
+		kademe, bolum2, sayi, kazanilan, sayi, toplam_tilsim / float(sayi), str(olum_katmani)])
 
 
 ## Bütün tılsımlar açıkken boss savaşı: hata çıkıyor mu, ne kadar güçlendiriyor?

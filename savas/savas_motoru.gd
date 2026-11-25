@@ -79,6 +79,9 @@ func _savas_basi_tilsimlari() -> void:
 		for o in oyuncular:
 			o.mana += 1
 		baslangic_mesajlari.append("Mana Kristali: herkesin bu tur 1 fazla manası var.")
+	if tilsimlar.has("gece_pelerini"):
+		boss.sersem = true
+		baslangic_mesajlari.append("Gece Pelerini: %s ilk tur hiçbir şey yapamayacak." % boss.ad)
 	if tilsimlar.has("savas_borusu"):
 		var kayip := int(boss.max_can * 0.1)
 		boss.can -= kayip
@@ -278,7 +281,7 @@ func _boss_hamlesi(olaylar: Array[Dictionary]) -> void:
 
 	var hasar := maxi(0, int(n.get("hasar", 0)) - boss.zayiflik)
 	match n.get("tur", ""):
-		"tekil":
+		"tekil", "emme":
 			var hedef_no: int = n["hedef"]
 			var metin: String = n["metin"]
 			if aggro >= 0 and oyuncular[aggro].hayatta() and aggro != hedef_no:
@@ -287,7 +290,11 @@ func _boss_hamlesi(olaylar: Array[Dictionary]) -> void:
 			if not oyuncular[hedef_no].hayatta():
 				hedef_no = canli_oyuncular().pick_random().no
 			olaylar.append({"tip": "boss_hamle", "metin": metin})
-			_oyuncuya_vur(hedef_no, hasar, olaylar)
+			var verilen := _oyuncuya_vur(hedef_no, hasar, olaylar)
+			if n["tur"] == "emme" and verilen > 0:
+				var once := boss.can
+				boss.can = mini(boss.max_can, boss.can + verilen)
+				olaylar.append({"tip": "boss_iyiles", "miktar": boss.can - once, "can": boss.can})
 		"cift":
 			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
 			for no in n["hedefler"]:
@@ -312,7 +319,8 @@ func _boss_hamlesi(olaylar: Array[Dictionary]) -> void:
 			olaylar.append({"tip": "boss_iyiles", "miktar": boss.can - once, "can": boss.can})
 
 
-func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary]) -> void:
+## Oyuncuya vurur; canından gerçekten giden miktarı döndürür
+func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary]) -> int:
 	var o := oyuncular[no]
 	var emilen := o.hasar_al(miktar)
 	var olay := _oyuncu_durumu(o)
@@ -322,6 +330,7 @@ func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary]) -> void:
 	olaylar.append(olay)
 	if not o.hayatta():
 		olaylar.append({"tip": "olum", "oyuncu": o.no, "metin": "%s düştü!" % o.ad})
+	return miktar - emilen
 
 
 # --- Tur başlangıcı ve boss niyeti -----------------------------------------
@@ -350,6 +359,13 @@ func _tur_baslat() -> void:
 		boss.isaret += 2
 	if tilsimlar.has("ejder_pulu"):
 		boss.zayiflik += 2
+	if tilsimlar.has("ruh_feneri") and tur > 1:
+		for o in canli_oyuncular():
+			o.iyiles(3)
+	if tilsimlar.has("kemik_zirh"):
+		for o in oyuncular:
+			if o.sinif == CardData.Sinif.TANK and o.hayatta():
+				o.zirh += 5
 	_niyet_belirle()
 
 
@@ -376,12 +392,12 @@ func _niyet_belirle() -> void:
 	var ad: String = secilen["ad"]
 	var n := {"tur": secilen["tur"]}
 	match secilen["tur"]:
-		"tekil":
+		"tekil", "emme":
 			var hedef: Oyuncu = canlilar[rng.randi_range(0, canlilar.size() - 1)]
 			var h := int(round(int(secilen["hasar"]) * hasar_carpani)) + boss.guc
 			n["hedef"] = hedef.no
 			n["hasar"] = h
-			n["metin"] = "%s -> %s (%d hasar)" % [ad, hedef.ad, h]
+			n["metin"] = "%s -> %s (%d hasar%s)" % [ad, hedef.ad, h, ", vurduğu kadar iyileşir" if secilen["tur"] == "emme" else ""]
 		"cift":
 			var karisik := canlilar.duplicate()
 			karisik.shuffle()

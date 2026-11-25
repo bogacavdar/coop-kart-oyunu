@@ -18,6 +18,7 @@ var _son_tip := ""
 func _ready() -> void:
 	size = Vector2(1280, 720)
 	havuz = KartHavuzu.yukle(KART_KLASORU)
+	Masa.tema = 1
 	kayit = Kayit.yukle()
 	secili_kademe = kayit.deger("acik_kademe")
 	_sinif_secimi_goster()
@@ -46,7 +47,7 @@ func _sinif_secimi_goster() -> void:
 	b.position = Vector2(0, 110)
 	b.size = Vector2(1280, 60)
 	var a := Arayuz.etiket(ekran, 18,
-		"Sınıfını seç. Diğer üç sınıfı bot takım arkadaşların oynayacak. Dağın derinliklerine inin ve Kızıl Ejder'i yenin.",
+		"Sınıfını seç. Diğer üç sınıfı bot takım arkadaşların oynayacak. Kızıl Ejder'i yenin, sonra mezarlara inip Lich Kral'ı durdurun.",
 		Color("#d8d0f0"))
 	a.position = Vector2(140, 180)
 	a.size = Vector2(1000, 50)
@@ -148,6 +149,7 @@ func _kosu_baslat(sinif: int) -> void:
 # --- Akış ------------------------------------------------------------------
 
 func _haritayi_goster() -> void:
+	Masa.tema = kosu.bolum
 	var h := HaritaEkrani.new(kosu)
 	h.dugum_secildi.connect(_dugum_secildi)
 	_ekrani_degistir(h)
@@ -197,9 +199,25 @@ func _kart_odulu_goster() -> void:
 	o.secildi.connect(func(kart: CardData):
 		if kart:
 			kosu.kart_ekle(kosu.insan, kart)
-		_haritayi_goster()
+		if kosu.bolum_gecisi_bekliyor:
+			_bolum_gecisi_goster()
+		else:
+			_haritayi_goster()
 	)
 	_ekrani_degistir(o)
+
+
+## Bölüm boss'u yenildi: takım iyileşir, bir tılsım seçilir, yeni bölümün haritası açılır
+func _bolum_gecisi_goster() -> void:
+	kosu.sonraki_bolume_gec()
+	var t := TilsimEkrani.new(kosu.tilsim_secenekleri(),
+		"Kızıl Ejder yenildi! Bölüm %d: %s" % [kosu.bolum, Kosu.bolum_adi(kosu.bolum)],
+		"Ejderin hazinesinin altında, mezarlara inen bir merdiven buldunuz. Takım tamamen iyileşti. Yola çıkmadan bir tılsım seç.")
+	t.secildi.connect(func(id: String):
+		kosu.tilsim_ekle(id)
+		_haritayi_goster()
+	)
+	_ekrani_degistir(t)
 
 
 func _kosu_sonu_goster() -> void:
@@ -214,8 +232,8 @@ func _kosu_sonu_goster() -> void:
 		Color("#5aff8a") if zafer else Color("#ff5a5a"))
 	b.position = Vector2(0, 200)
 	b.size = Vector2(1280, 80)
-	var metin := "Kızıl Ejder yenildi! Ozanlar bu zaferi yıllarca anlatacak." if zafer \
-		else "Takım %d. katmanda düştü." % (kosu.katman + 1)
+	var metin := "Lich Kral da yenildi! Ozanlar bu zaferi yıllarca anlatacak." if zafer \
+		else "Takım %d. bölümün %d. katmanında düştü." % [kosu.bolum, kosu.katman + 1]
 	var a := Arayuz.etiket(ekran, 20, metin + "\n%s  ·  Kazanılan savaş: %d" % [Kademe.baslik(kosu.kademe), kosu.kazanilan_savas], Color("#d8d0f0"))
 	a.position = Vector2(0, 300)
 	a.size = Vector2(1280, 60)

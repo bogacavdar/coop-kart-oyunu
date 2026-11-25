@@ -215,10 +215,11 @@ func _niyet_ipucu() -> String:
 		"guc": "Kalıcı olarak güçlenir. Bu tur saldırmayacak: düşmana yüklenme zamanı!",
 		"kalkan": "Kendine kalkan kazanır. Kalkan bir sonraki turunuzda vuruşlarınızı emer.",
 		"iyiles": "Kendini iyileştirir. Bu tur saldırmayacak: düşmana yüklenme zamanı!",
+		"emme": "Tek bir oyuncuya vurur ve verdiği hasar kadar iyileşir. Zırh hem hasarı hem iyileşmeyi azaltır.",
 	}
 	var tur: String = motor.boss.niyet.get("tur", "")
 	var metin := "[b]Sıradaki hamle[/b]\n" + str(aciklama.get(tur, ""))
-	if tur in ["tekil", "cift", "alan"]:
+	if tur in ["tekil", "cift", "alan", "emme"]:
 		metin += "\n" + Ipucu.SOZLUK["zayif"]
 	return metin
 

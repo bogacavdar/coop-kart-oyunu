@@ -33,6 +33,8 @@ enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HAS
 @export var ek_deger: int = 0
 ## Başlangıç destesinde mi? (değilse ödül olarak çıkar)
 @export var baslangic := false
+## Ödül olarak en erken hangi bölümde çıkar
+@export var bolum := 1
 ## ComfyUI'dan gelen görsel
 @export var gorsel: Texture2D
 

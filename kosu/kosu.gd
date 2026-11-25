@@ -39,6 +39,11 @@ var sira := -1
 var bitti := false
 var kazandi := false
 var kazanilan_savas := 0
+## Bölüm: 1 = Ejderin İni, 2 = Lich'in Mezarı
+const BOLUM_SAYISI := 2
+var bolum := 1
+## Bölüm boss'u yenildi, sonraki bölüme geçilmeyi bekliyor
+var bolum_gecisi_bekliyor := false
 ## Zorluk kademesi ve henüz kilidi açılmamış kart/tılsım id'leri
 var kademe := 0
 var kilitli: Array = []
@@ -123,11 +128,13 @@ func savas_kurulumu(tip: String) -> Dictionary:
 	var dusman: String
 	match tip:
 		"elit":
-			dusman = Dusmanlar.ELIT[rng.randi_range(0, Dusmanlar.ELIT.size() - 1)]
+			var liste := Dusmanlar.elit_listesi(bolum)
+			dusman = liste[rng.randi_range(0, liste.size() - 1)]
 		"boss":
-			dusman = Dusmanlar.BOSS
+			dusman = Dusmanlar.boss_id(bolum)
 		_:
-			dusman = Dusmanlar.NORMAL[rng.randi_range(0, Dusmanlar.NORMAL.size() - 1)]
+			var liste := Dusmanlar.normal_listesi(bolum)
+			dusman = liste[rng.randi_range(0, liste.size() - 1)]
 	var liste: Array = []
 	for v in takim:
 		liste.append({"sinif": v["sinif"], "can": v["can"], "max_can": v["max_can"], "deste": v["deste"]})
@@ -148,14 +155,33 @@ func savas_sonucu(motor: SavasMotoru, tip: String) -> void:
 		if tilsimlar.has("sifaci_kolyesi"):
 			v["can"] = mini(v["max_can"], v["can"] + 8)
 	if tip == "boss":
-		bitti = true
-		kazandi = true
+		if bolum < BOLUM_SAYISI:
+			bolum_gecisi_bekliyor = true
+		else:
+			bitti = true
+			kazandi = true
+
+
+## Bölüm boss'undan sonra: takım tamamen iyileşir, yeni harita açılır
+func sonraki_bolume_gec() -> void:
+	bolum += 1
+	bolum_gecisi_bekliyor = false
+	for v in takim:
+		v["can"] = v["max_can"]
+	katman = -1
+	sira = -1
+	_harita_olustur()
+
+
+static func bolum_adi(b: int) -> String:
+	return "Lich'in Mezarı" if b >= 2 else "Ejderin İni"
 
 
 # --- Tılsımlar ------------------------------------------------------------
 
 func tilsim_secenekleri(adet: int = 3) -> Array[String]:
-	var aday: Array = Tilsimlar.LISTE.keys().filter(func(id): return not tilsimlar.has(id) and not kilitli.has(id))
+	var aday: Array = Tilsimlar.LISTE.keys().filter(func(id):
+		return not tilsimlar.has(id) and not kilitli.has(id) and Tilsimlar.bolum(id) <= bolum)
 	var liste: Array[String] = []
 	while liste.size() < adet and not aday.is_empty():
 		var i := rng.randi_range(0, aday.size() - 1)
@@ -181,7 +207,8 @@ func deste(sinif: int) -> Array:
 
 
 func odul_secenekleri(sinif: int) -> Array[CardData]:
-	var aday: Array = havuz.get(sinif, []).filter(func(k): return not k.baslangic and not kilitli.has(String(k.id)))
+	var aday: Array = havuz.get(sinif, []).filter(func(k):
+		return not k.baslangic and not kilitli.has(String(k.id)) and k.bolum <= bolum)
 	var liste: Array[CardData] = []
 	while liste.size() < 3 and not aday.is_empty():
 		var i := rng.randi_range(0, aday.size() - 1)

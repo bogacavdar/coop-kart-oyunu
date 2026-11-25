@@ -21,7 +21,19 @@ const LISTE := {
 		"aciklama": "Alındığında bütün takımın max canı 8 artar."},
 	"bilge_kitabi": {"ad": "Bilge Kitabı",
 		"aciklama": "Herkesin eli 4 yerine 5 kart olur."},
+	# 2. bölümde bulunanlar
+	"ruh_feneri": {"ad": "Ruh Feneri", "bolum": 2,
+		"aciklama": "Her turun başında hayatta olan herkes 3 can iyileşir."},
+	"kemik_zirh": {"ad": "Kemik Zırh", "bolum": 2,
+		"aciklama": "Her turun başında Savaşçı 5 zırh kazanır."},
+	"gece_pelerini": {"ad": "Gece Pelerini", "bolum": 2,
+		"aciklama": "Her savaşın ilk turunda düşman hiçbir şey yapamaz."},
 }
+
+
+## Tılsım en erken hangi bölümde bulunabilir
+static func bolum(id: String) -> int:
+	return int(LISTE.get(id, {}).get("bolum", 1))
 
 
 static func ad(id: String) -> String:

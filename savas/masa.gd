@@ -11,6 +11,8 @@ const PIRINC := Color(0.78, 0.62, 0.32)
 
 ## false ise sadece salon çizilir (harita, ödül ekranları)
 var masa_ciz := true
+## 1: meşaleli taş salon, 2: yeşil alevli mezar
+static var tema := 1
 var _zaman := 0.0
 
 
@@ -27,14 +29,15 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	# Taş duvar
-	draw_rect(Rect2(Vector2.ZERO, size), Color("#15110d"))
+	var mezar := tema >= 2
+	draw_rect(Rect2(Vector2.ZERO, size), Color("#0e0d14") if mezar else Color("#15110d"))
 	for sira in 19:
 		var y := sira * 40.0
 		var x := -48.0 if sira % 2 == 1 else 0.0
 		while x < size.x:
 			var tas := Rect2(x + 2, y + 2, 92, 36)
 			var ton := 0.03 + 0.02 * sin(x * 0.37 + y * 0.11)
-			draw_rect(tas, Color(1.0, 0.88, 0.7, ton))
+			draw_rect(tas, Color(0.7, 0.8, 1.0, ton) if mezar else Color(1.0, 0.88, 0.7, ton))
 			draw_rect(tas, Color(0, 0, 0, 0.35), false, 2.0)
 			x += 96.0
 
@@ -42,8 +45,9 @@ func _draw() -> void:
 	for i in MESALELER.size():
 		var m := MESALELER[i]
 		var titreme := 0.85 + 0.15 * sin(_zaman * 9.0 + i * 2.0) * sin(_zaman * 5.3 + i)
+		var isik := Color(0.35, 1.0, 0.55, 0.025) if mezar else Color(1.0, 0.55, 0.2, 0.025)
 		for k in 10:
-			draw_circle(m, (230 - k * 20) * titreme, Color(1.0, 0.55, 0.2, 0.025))
+			draw_circle(m, (230 - k * 20) * titreme, isik)
 		draw_rect(Rect2(m + Vector2(-6, 0), Vector2(12, 46)), Color("#4a2e18"))
 		draw_rect(Rect2(m + Vector2(-10, -4), Vector2(20, 8)), Color("#2c2c30"))
 		var alev := PackedVector2Array([
@@ -51,8 +55,8 @@ func _draw() -> void:
 			m + Vector2(4 + 3 * sin(_zaman * 11.0 + i), -26 * titreme),
 			m + Vector2(-2 * sin(_zaman * 7.0), -40 * titreme),
 			m + Vector2(-6, -22 * titreme)])
-		draw_colored_polygon(alev, Color(1.0, 0.6, 0.15, 0.9))
-		draw_circle(m + Vector2(0, -12), 6, Color(1.0, 0.9, 0.5, 0.9))
+		draw_colored_polygon(alev, Color(0.3, 1.0, 0.5, 0.9) if mezar else Color(1.0, 0.6, 0.15, 0.9))
+		draw_circle(m + Vector2(0, -12), 6, Color(0.8, 1.0, 0.85, 0.9) if mezar else Color(1.0, 0.9, 0.5, 0.9))
 
 	# Üst ve alt kenarı karart
 	for k in 6:
@@ -65,10 +69,17 @@ func _draw() -> void:
 
 	# Masa: gölge, ahşap kenar, yeşil çuha
 	_elips(MERKEZ + Vector2(0, 16), YARICAP + Vector2(20, 20), Color(0, 0, 0, 0.55))
-	_elips(MERKEZ, YARICAP + Vector2(18, 18), Color("#6b4423"))
-	_elips(MERKEZ, YARICAP + Vector2(9, 9), Color("#4a2c16"))
-	_elips(MERKEZ, YARICAP, Color("#1d3826"))
-	_elips(MERKEZ, YARICAP * 0.66, Color("#22422c"))
+	if mezar:
+		# Taş lahit masa, mor örtü
+		_elips(MERKEZ, YARICAP + Vector2(18, 18), Color("#4a4a52"))
+		_elips(MERKEZ, YARICAP + Vector2(9, 9), Color("#2e2e36"))
+		_elips(MERKEZ, YARICAP, Color("#26193a"))
+		_elips(MERKEZ, YARICAP * 0.66, Color("#2e1f46"))
+	else:
+		_elips(MERKEZ, YARICAP + Vector2(18, 18), Color("#6b4423"))
+		_elips(MERKEZ, YARICAP + Vector2(9, 9), Color("#4a2c16"))
+		_elips(MERKEZ, YARICAP, Color("#1d3826"))
+		_elips(MERKEZ, YARICAP * 0.66, Color("#22422c"))
 
 	# Pirinç halka ve pusula gülü
 	var oran := YARICAP.y / YARICAP.x

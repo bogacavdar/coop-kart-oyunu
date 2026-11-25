@@ -18,7 +18,7 @@ const DURAK_ACIKLAMALARI := {
 	"elit": "[b]Elit Savaş[/b]\nÇok daha güçlü bir düşman. Kazanınca 3 tılsımdan birini ve bir kart seçersin.",
 	"dinlenme": "[b]Kamp Ateşi[/b]\nYa takım dinlenip iyileşir ya da bir kartını kalıcı olarak güçlendirirsin.",
 	"gizem": "[b]Gizemli Olay[/b]\nRastgele bir olay. İyi de olabilir, bedeli olan bir fırsat da.",
-	"boss": "[b]Kızıl Ejder[/b]\nKoşunun son düşmanı. Bütün takıma ateş püskürür ve savaş uzadıkça öfkelenir.",
+	"boss": "[b]Bölüm Boss'u[/b]\n1. bölümde Kızıl Ejder, 2. bölümde Lich Kral. Savaş uzadıkça öfkelenirler.",
 }
 
 var kosu: Kosu
@@ -34,9 +34,9 @@ func _init(p_kosu: Kosu) -> void:
 func _ready() -> void:
 	add_child(Masa.new(false))
 
-	var baslik := Arayuz.etiket(self, 30, "Yol Haritası", Arayuz.ALTIN)
+	var baslik := Arayuz.etiket(self, 30, "Bölüm %d: %s" % [kosu.bolum, Kosu.bolum_adi(kosu.bolum)], Arayuz.ALTIN)
 	baslik.position = Vector2(20, 14)
-	baslik.size = Vector2(300, 40)
+	baslik.size = Vector2(500, 40)
 	var kademe_etiketi := Arayuz.etiket(self, 18, Kademe.baslik(kosu.kademe), Color("#ff9a7a"))
 	kademe_etiketi.position = Vector2(1040, 20)
 	kademe_etiketi.size = Vector2(220, 30)
@@ -176,7 +176,7 @@ func _lejant() -> void:
 		"elit": "Elit: zor, ödülü tılsım",
 		"dinlenme": "Dinlen: can veya kart güçlendir",
 		"gizem": "?: rastgele olay",
-		"boss": "BOSS: Kızıl Ejder",
+		"boss": "BOSS: " + ("Lich Kral" if kosu.bolum >= 2 else "Kızıl Ejder"),
 	}
 	for tip in aciklamalar:
 		var l := Arayuz.etiket(dikey, 13, aciklamalar[tip], (TIP_BILGI[tip][1] as Color).lightened(0.3))

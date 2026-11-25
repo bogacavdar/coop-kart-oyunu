@@ -11,12 +11,12 @@ const ACIKLAMALAR: Array[String] = [
 	"Bütün düşmanlar %10 daha sert vurur.",
 	"Kamp ateşinde dinlenmek %20 iyileştirir (%30 yerine).",
 	"Düşmanlar savaşa 1 güçle başlar.",
-	"Kızıl Ejder'in canı %15 fazla.",
+	"Bölüm bosslarının canı %15 fazla.",
 	"Düşen oyuncular savaştan sonra sadece 1 canla kalkar.",
 	"Takım koşuya canının %90'ıyla başlar.",
-	"Elitler ve Kızıl Ejder fazladan 2 güçle başlar.",
+	"Elitler ve bosslar fazladan 2 güçle başlar.",
 	"Normal düşmanların canı %15 fazla.",
-	"Kızıl Ejder çok daha hızlı öfkelenir.",
+	"Bosslar çok daha hızlı öfkelenir.",
 ]
 
 

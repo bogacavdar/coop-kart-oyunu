@@ -6,6 +6,8 @@ Oyun: Boğaç
 - Sbed (opengameart.org/content/95-game-icons)
 - Cathelineau
 - Skoll
+- Lucas (lucasms)
+- Badges
 
 Oyun motoru: Godot Engine (MIT lisansı, godotengine.org)
 

@@ -33,6 +33,8 @@ static func planla(motor: SavasMotoru, o: Oyuncu) -> void:
 static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array:
 	var niyet := motor.boss.niyet
 	var niyet_tur: String = niyet.get("tur", "")
+	if niyet_tur == "emme":
+		niyet_tur = "tekil"
 	var niyet_hasar: int = niyet.get("hasar", 0)
 	var niyet_hedef: int = niyet.get("hedef", -1)
 	var canlilar := motor.canli_oyuncular()
