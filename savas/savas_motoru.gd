@@ -256,15 +256,15 @@ func _niyet_belirle() -> void:
 	var zar := rng.randi_range(1, 100)
 	var h := 0
 	if zar <= 45 or tur == 1:
-		h = 24 + boss.guc
+		h = 27 + boss.guc
 		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
 			"metin": "Kuyruklu Yıldız -> %s (%d hasar)" % [hedef.ad, h]}
 	elif zar <= 65:
-		h = 36 + boss.guc
+		h = 40 + boss.guc
 		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
 			"metin": "Kara Delik -> %s (%d hasar)" % [hedef.ad, h]}
 	elif zar <= 90:
-		h = 13 + int(boss.guc / 2.0)
+		h = 15 + int(boss.guc / 2.0)
 		boss.niyet = {"tur": "alan", "hasar": h,
 			"metin": "Satürn Halkası -> Tüm takım (%d hasar)" % h}
 	else:
