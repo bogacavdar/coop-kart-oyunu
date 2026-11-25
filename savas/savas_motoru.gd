@@ -10,7 +10,7 @@ extends RefCounted
 const EL_BOYUTU := 4
 const MAKS_MANA := 6
 const KOPYA_SAYISI := 2
-const BOSS_CANI_OYUNCU_BASI := 65
+const BOSS_CANI_OYUNCU_BASI := 50
 
 var oyuncular: Array[Oyuncu] = []
 var boss: Boss
@@ -231,7 +231,7 @@ func _tur_baslat() -> void:
 	boss.sersem = false
 	aggro = -1
 	# Savaş uzadıkça boss sertleşir
-	if tur > 1 and tur % 3 == 1:
+	if tur > 1 and tur % 2 == 1:
 		boss.guc += 1
 	for o in oyuncular:
 		o.zirh = 0
@@ -249,15 +249,15 @@ func _niyet_belirle() -> void:
 	var zar := rng.randi_range(1, 100)
 	var h := 0
 	if zar <= 45 or tur == 1:
-		h = 10 + boss.guc
+		h = 13 + boss.guc
 		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
 			"metin": "Kuyruklu Yıldız -> %s (%d hasar)" % [hedef.ad, h]}
 	elif zar <= 65:
-		h = 18 + boss.guc
+		h = 22 + boss.guc
 		boss.niyet = {"tur": "tekil", "hedef": hedef.no, "hasar": h,
 			"metin": "Kara Delik -> %s (%d hasar)" % [hedef.ad, h]}
 	elif zar <= 90:
-		h = 5 + int(boss.guc / 2.0)
+		h = 7 + int(boss.guc / 2.0)
 		boss.niyet = {"tur": "alan", "hasar": h,
 			"metin": "Satürn Halkası -> Tüm takım (%d hasar)" % h}
 	else:
