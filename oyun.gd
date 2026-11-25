@@ -91,7 +91,13 @@ func _kredileri_goster() -> void:
 
 func _kosu_baslat(sinif: int) -> void:
 	kosu = Kosu.new(havuz, sinif)
-	_haritayi_goster()
+	var t := TilsimEkrani.new(kosu.tilsim_secenekleri(), "Yolculuğa bir tılsımla başla",
+		"Tılsımlar bütün takıma koşu sonuna kadar bonus verir. Elitleri yenerek daha fazlasını bulabilirsin.")
+	t.secildi.connect(func(id: String):
+		kosu.tilsim_ekle(id)
+		_haritayi_goster()
+	)
+	_ekrani_degistir(t)
 
 
 # --- Akış ------------------------------------------------------------------

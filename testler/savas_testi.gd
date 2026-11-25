@@ -99,6 +99,7 @@ func _kosu_raporu(havuz: Dictionary) -> void:
 	var olum_katmani := {}
 	for i in 150:
 		var kosu := Kosu.new(havuz, -1)
+		kosu.tilsim_ekle(kosu.tilsim_secenekleri().pick_random())
 		var adim := 0
 		while not kosu.bitti and adim < 20:
 			adim += 1

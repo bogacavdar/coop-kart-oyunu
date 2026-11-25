@@ -5,19 +5,24 @@ extends Control
 signal secildi(id: String)
 
 var _secenekler: Array[String]
+var _baslik: String
+var _alt: String
 
 
-func _init(secenekler: Array[String]) -> void:
+func _init(secenekler: Array[String], baslik: String = "Elit yenildi! Bir tılsım seç",
+		alt: String = "Tılsımlar bütün takıma koşu sonuna kadar bonus verir.") -> void:
 	_secenekler = secenekler
+	_baslik = baslik
+	_alt = alt
 	size = Vector2(1280, 720)
 
 
 func _ready() -> void:
 	add_child(Masa.new(false))
-	var b := Arayuz.etiket(self, 40, "Elit yenildi! Bir tılsım seç", Arayuz.ALTIN)
+	var b := Arayuz.etiket(self, 40, _baslik, Arayuz.ALTIN)
 	b.position = Vector2(0, 90)
 	b.size = Vector2(1280, 50)
-	var a := Arayuz.etiket(self, 17, "Tılsımlar bütün takıma koşu sonuna kadar bonus verir.", Color("#c8c0e0"))
+	var a := Arayuz.etiket(self, 17, _alt, Color("#c8c0e0"))
 	a.position = Vector2(0, 145)
 	a.size = Vector2(1280, 24)
 
