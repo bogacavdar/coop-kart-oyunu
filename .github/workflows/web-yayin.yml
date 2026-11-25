@@ -39,8 +39,8 @@ jobs:
       - name: Savaş testini çalıştır
         run: timeout 300 godot --headless --script res://testler/savas_testi.gd 2>&1 | tee test.log || true
 
-      - name: Ana sahneyi kısa süre çalıştır
-        run: timeout 120 godot --headless --quit-after 300 2>&1 | tee calistir.log || true
+      - name: Arayüz testini çalıştır
+        run: timeout 120 godot --headless --script res://testler/arayuz_testi.gd 2>&1 | tee calistir.log || true
 
       - name: Hataları kontrol et
         run: |
@@ -48,6 +48,7 @@ jobs:
             echo "Kodda hata bulundu"; exit 1
           fi
           grep -q "TEST TAMAM" test.log || { echo "Test tamamlanmadı"; exit 1; }
+          grep -q "ARAYUZ TESTI TAMAM" calistir.log || { echo "Arayüz testi tamamlanmadı"; exit 1; }
 
       - name: Web sürümünü derle
         run: |
