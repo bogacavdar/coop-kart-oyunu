@@ -11,6 +11,9 @@ enum Tip { KORUMA, KONTROL, SALDIRI, IYILESTIRME }
 
 enum Hedef { BOSS, MUTTEFIK, KENDISI, TUM_TAKIM }
 
+## Kartın ne yaptığı
+enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET }
+
 @export var id: StringName
 @export var kart_adi: String = "Yeni Kart"
 ## Açıklamada {deger} yazarsan, kartın değeriyle otomatik değişir.
@@ -19,6 +22,7 @@ enum Hedef { BOSS, MUTTEFIK, KENDISI, TUM_TAKIM }
 @export var sinif: Sinif = Sinif.TANK
 @export var tip: Tip = Tip.SALDIRI
 @export var hedef: Hedef = Hedef.BOSS
+@export var etki: Etki = Etki.HASAR
 ## Hasar, heal, zırh miktarı vb.
 @export var deger: int = 0
 ## ComfyUI'dan gelen görsel

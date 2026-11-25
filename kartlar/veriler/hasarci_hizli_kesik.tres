@@ -4,11 +4,12 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"kalkan_duvari"
-kart_adi = "Kalkan Duvarı"
-aciklama = "Boss'un dikkatini üstüne çeker ve {deger} zırh kazanır."
-mana = 2
-sinif = 0
-tip = 0
-hedef = 2
-deger = 8
+id = &"hasarci_hizli_kesik"
+kart_adi = "Hızlı Kesik"
+aciklama = "Boss'a {deger} hasar verir."
+mana = 0
+sinif = 2
+tip = 2
+hedef = 0
+etki = 0
+deger = 3

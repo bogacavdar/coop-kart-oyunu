@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"kontrol_derin_yara"
+kart_adi = "Derin Yara"
+aciklama = "Boss'u işaretler: bu tur her saldırı +{deger} hasar verir."
+mana = 3
+sinif = 3
+tip = 1
+hedef = 0
+etki = 4
+deger = 6

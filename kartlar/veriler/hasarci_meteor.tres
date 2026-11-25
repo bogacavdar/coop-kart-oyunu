@@ -4,11 +4,12 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"zayif_nokta"
-kart_adi = "Zayıf Nokta"
-aciklama = "Boss'u işaretler. Bu tur boss'a vurulan saldırılar +{deger} hasar verir."
-mana = 1
-sinif = 3
-tip = 1
+id = &"hasarci_meteor"
+kart_adi = "Meteor"
+aciklama = "Boss'a {deger} hasar verir."
+mana = 5
+sinif = 2
+tip = 2
 hedef = 0
-deger = 3
+etki = 0
+deger = 24
