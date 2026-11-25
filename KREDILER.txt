@@ -8,3 +8,5 @@ Oyun: Boğaç
 - Skoll
 
 Oyun motoru: Godot Engine (MIT lisansı, godotengine.org)
+
+Arayüz çerçeveleri: Kenney - Fantasy UI Borders (CC0, www.kenney.nl)

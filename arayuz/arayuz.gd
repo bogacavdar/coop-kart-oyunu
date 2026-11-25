@@ -3,6 +3,38 @@ extends RefCounted
 ## Ekranlarda ortak kullanılan küçük yardımcılar.
 
 const ALTIN := Color("#e8c27a")
+const PANEL_CERCEVESI := "res://varliklar/kenney/panel_cercevesi.png"
+const BUTON_CERCEVESI := "res://varliklar/kenney/buton_cercevesi.png"
+const KART_CERCEVESI := "res://varliklar/kenney/kart_cercevesi.png"
+
+
+## Bir kutunun üstüne Kenney'in süslü çerçevesini, verilen renge boyayarak ekler
+static func susle(kutu: Control, renk: Color, doku: String = PANEL_CERCEVESI, boslik: float = 3.0) -> NinePatchRect:
+	if not ResourceLoader.exists(doku):
+		return null
+	var c := NinePatchRect.new()
+	c.texture = load(doku)
+	c.patch_margin_left = 16
+	c.patch_margin_right = 16
+	c.patch_margin_top = 16
+	c.patch_margin_bottom = 16
+	c.self_modulate = renk
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.offset_left = boslik
+	c.offset_top = boslik
+	c.offset_right = -boslik
+	c.offset_bottom = -boslik
+	if kutu is Container:
+		# Container çocukları kendi yerleştirir; çerçeveyi ayrı bir katmanda tut
+		var katman := Control.new()
+		katman.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		katman.set_anchors_preset(Control.PRESET_FULL_RECT)
+		kutu.add_child(katman)
+		katman.add_child(c)
+	else:
+		kutu.add_child(c)
+	return c
 
 
 static func etiket(ebeveyn: Node, boyut: int, metin: String = "", renk: Color = Color.WHITE) -> Label:
@@ -39,6 +71,9 @@ static func buton(metin: String, boyut: Vector2, renk: Color = Color("#5c4720"),
 	b.add_theme_stylebox_override("pressed", kutu_stili(renk.darkened(0.3), kenar))
 	b.add_theme_stylebox_override("disabled", kutu_stili(renk.darkened(0.5), kenar.darkened(0.5)))
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	var cerceve := susle(b, kenar.lightened(0.15), BUTON_CERCEVESI, 4.0)
+	if cerceve:
+		cerceve.self_modulate.a = 0.85
 	return b
 
 

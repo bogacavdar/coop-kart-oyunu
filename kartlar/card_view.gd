@@ -31,6 +31,7 @@ var temel_z := 0
 var yukselme := 0.0
 
 var _frame_style: StyleBoxFlat
+var _susleme: NinePatchRect
 var _art_zemin: StyleBoxFlat
 var _art: TextureRect
 var _name_label: Label
@@ -69,8 +70,10 @@ func yerlestir(merkez: Vector2, olcek: float, rotasyon: float = 0.0, p_yukselme:
 
 func set_secili(deger: bool) -> void:
 	secili = deger
-	_frame_style.border_color = Color.GOLD if secili else _sinif_rengi().darkened(0.3)
-	_frame_style.set_border_width_all(5 if secili else 3)
+	_frame_style.border_color = Color.GOLD if secili else _sinif_rengi().darkened(0.45)
+	_frame_style.set_border_width_all(5 if secili else 2)
+	if _susleme:
+		_susleme.self_modulate = Color.GOLD if secili else _sinif_rengi().lightened(0.15)
 
 
 # --- Arayüz kurulumu ---------------------------------------------------------
@@ -86,6 +89,19 @@ func _build() -> void:
 	_frame_style.set_border_width_all(3)
 	frame.add_theme_stylebox_override("panel", _frame_style)
 	add_child(frame)
+
+	# Kenney süslü çerçevesi (sınıf rengine boyanır)
+	_susleme = NinePatchRect.new()
+	if ResourceLoader.exists(Arayuz.KART_CERCEVESI):
+		_susleme.texture = load(Arayuz.KART_CERCEVESI)
+	_susleme.patch_margin_left = 18
+	_susleme.patch_margin_right = 18
+	_susleme.patch_margin_top = 18
+	_susleme.patch_margin_bottom = 18
+	_susleme.position = Vector2(4, 4)
+	_susleme.size = CARD_SIZE - Vector2(8, 8)
+	_susleme.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_susleme)
 
 	# İsim
 	_name_label = _make_label(Vector2(12, 8), Vector2(176, 28), 16)

@@ -92,6 +92,7 @@ func _arayuzu_kur() -> void:
 	_niyet_kutu.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_niyet_kutu.add_theme_stylebox_override("panel", _kutu_stili(Color(0.1, 0.05, 0.02, 0.85), Color("#ffb347")))
 	add_child(_niyet_kutu)
+	Arayuz.susle(_niyet_kutu, Color("#ffb347"), Arayuz.PANEL_CERCEVESI, -6.0)
 	_niyet = Label.new()
 	_niyet.custom_minimum_size = Vector2(210, 0)
 	_niyet.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -120,6 +121,7 @@ func _arayuzu_kur() -> void:
 	log_panel.size = Vector2(250, 122)
 	log_panel.add_theme_stylebox_override("panel", _kutu_stili(Color(0.05, 0.04, 0.1, 0.8), Color("#3a3360")))
 	add_child(log_panel)
+	Arayuz.susle(log_panel, Color("#8a7fd0"), Arayuz.PANEL_CERCEVESI, -6.0)
 	_log = RichTextLabel.new()
 	_log.bbcode_enabled = true
 	_log.scroll_following = true
@@ -139,6 +141,7 @@ func _arayuzu_kur() -> void:
 	_buton.add_theme_stylebox_override("disabled", _kutu_stili(Color("#2a2418"), Color("#5c4720")))
 	_buton.pressed.connect(_turu_oyna)
 	add_child(_buton)
+	Arayuz.susle(_buton, Color("#ffe39a"), Arayuz.BUTON_CERCEVESI, 4.0)
 
 	# Hedef seçme bandı (müttefik kartı seçilince görünür)
 	_hedef_bandi = PanelContainer.new()
@@ -147,6 +150,7 @@ func _arayuzu_kur() -> void:
 	_hedef_bandi.z_index = 60
 	_hedef_bandi.visible = false
 	add_child(_hedef_bandi)
+	Arayuz.susle(_hedef_bandi, Color("#7dffa0"), Arayuz.PANEL_CERCEVESI, -6.0)
 	_hedef_yazisi = Label.new()
 	_hedef_yazisi.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hedef_yazisi.add_theme_font_size_override("font_size", 19)
