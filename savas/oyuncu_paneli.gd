@@ -76,7 +76,7 @@ func _etiket(ebeveyn: Control, boyut: int) -> Label:
 func guncelle(o: Oyuncu, aktif: bool, hedef_modu: bool, secim_metni: String) -> void:
 	_ad.text = ("» " if aktif else "") + o.ad
 	degerleri_goster(o.can, o.max_can, o.zirh)
-	_mana.text = "Mana %d" % o.mana
+	_mana.text = "Mana %d/%d" % [o.kalan_mana(), o.mana]
 	if o.hayatta():
 		modulate = Color.WHITE
 		_secim.text = secim_metni

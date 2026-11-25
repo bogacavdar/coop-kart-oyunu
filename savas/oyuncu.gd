@@ -12,9 +12,9 @@ var mana := 0
 var deste: Array[CardData] = []
 var el: Array[CardData] = []
 var atilan: Array[CardData] = []
-## Bu tur seçilen kart ve (müttefike oynanıyorsa) hedef oyuncu
-var secilen: CardData = null
-var secilen_hedef := -1
+## Bu tur seçilen kartlar: [{"kart": CardData, "hedef": int}]
+## hedef: müttefike oynanan kartta hedef oyuncu, değilse -1
+var secimler: Array[Dictionary] = []
 
 
 func _init(p_no: int, p_sinif: int, p_can: int) -> void:
@@ -27,6 +27,33 @@ func _init(p_no: int, p_sinif: int, p_can: int) -> void:
 
 func hayatta() -> bool:
 	return can > 0
+
+
+func harcanan_mana() -> int:
+	var toplam := 0
+	for s in secimler:
+		toplam += (s["kart"] as CardData).mana
+	return toplam
+
+
+func kalan_mana() -> int:
+	return mana - harcanan_mana()
+
+
+func secili_mi(kart: CardData) -> bool:
+	for s in secimler:
+		if s["kart"] == kart:
+			return true
+	return false
+
+
+## Kalan manayla oynanabilecek, henüz seçilmemiş kart var mı?
+func oynayabilir_mi() -> bool:
+	var kalan := kalan_mana()
+	for kart in el:
+		if not secili_mi(kart) and kart.mana <= kalan:
+			return true
+	return false
 
 
 func kart_cek(adet: int) -> void:

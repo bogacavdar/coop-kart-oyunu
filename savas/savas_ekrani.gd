@@ -1,7 +1,7 @@
 extends Control
 ## Savaş ekranı. Şimdilik 4 oyuncuyu tek bilgisayardan sırayla yönetiyorsun:
-## aktif oyuncunun elinden kart seç, müttefik kartlarında hedef oyuncunun paneline tıkla.
-## Herkes seçince "Turu Oyna".
+## aktif oyuncunun elinden manası yettiği kadar kart seç,
+## müttefik kartlarında hedef oyuncunun paneline tıkla. Herkes seçince "Turu Oyna".
 
 const KART_KLASORU := "res://kartlar/veriler"
 
@@ -168,12 +168,15 @@ func _hepsini_guncelle() -> void:
 
 
 func _secim_metni(o: Oyuncu) -> String:
-	if o.secilen == null:
+	if o.secimler.is_empty():
 		return "Kart seçilmedi"
-	var metin := "Seçim: " + o.secilen.kart_adi
-	if o.secilen_hedef >= 0:
-		metin += " -> " + motor.oyuncular[o.secilen_hedef].ad
-	return metin
+	var parcalar: PackedStringArray = []
+	for s in o.secimler:
+		var metin: String = (s["kart"] as CardData).kart_adi
+		if s["hedef"] >= 0:
+			metin += " -> " + motor.oyuncular[s["hedef"]].ad
+		parcalar.append(metin)
+	return ", ".join(parcalar)
 
 
 func _el_guncelle() -> void:
@@ -189,8 +192,9 @@ func _el_guncelle() -> void:
 		var v := CardView.new()
 		v.setup(kart)
 		v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		v.set_secili(kart == o.secilen or kart == hedef_bekleyen)
-		if kart.mana > o.mana:
+		var secili := o.secili_mi(kart)
+		v.set_secili(secili or kart == hedef_bekleyen)
+		if not secili and kart.mana > o.kalan_mana():
 			v.modulate = Color(1, 1, 1, 0.4)
 		v.card_clicked.connect(_on_kart_tiklandi)
 		_el.add_child(v)
@@ -207,7 +211,7 @@ func _bilgi_guncelle() -> void:
 		_bilgi.text = "Herkes hazır. Turu Oyna'ya bas."
 	else:
 		var o := motor.oyuncular[aktif]
-		_bilgi.text = "%s kart seçiyor (mana %d). Başka oyuncuya geçmek için paneline tıkla." % [o.ad, o.mana]
+		_bilgi.text = "%s kart seçiyor (kalan mana %d). Diğer oyuncuya geçmek için paneline tıkla." % [o.ad, o.kalan_mana()]
 
 
 # --- Girdiler --------------------------------------------------------------
@@ -217,20 +221,24 @@ func _on_kart_tiklandi(v: CardView) -> void:
 		return
 	var o := motor.oyuncular[aktif]
 	var kart := v.data
-	if kart == o.secilen or kart == hedef_bekleyen:
-		motor.secimi_kaldir(aktif)
+	# Seçili karta veya hedef bekleyen karta tekrar tıklamak seçimi geri alır
+	if kart == hedef_bekleyen:
 		hedef_bekleyen = null
 		_hepsini_guncelle()
 		return
-	if kart.mana > o.mana:
-		_bilgi.text = "Yeterli mana yok (%d gerekli, %d var)." % [kart.mana, o.mana]
+	if o.secili_mi(kart):
+		motor.secimi_kaldir(aktif, kart)
+		_hepsini_guncelle()
+		return
+	if kart.mana > o.kalan_mana():
+		_bilgi.text = "Yeterli mana yok (%d gerekli, %d kaldı)." % [kart.mana, o.kalan_mana()]
 		return
 	if kart.hedef == CardData.Hedef.MUTTEFIK:
 		hedef_bekleyen = kart
 		_hepsini_guncelle()
 		return
 	hedef_bekleyen = null
-	if motor.kart_sec(aktif, kart):
+	if motor.kart_sec(aktif, kart) and not o.oynayabilir_mi():
 		_sonraki_oyuncu()
 	_hepsini_guncelle()
 
@@ -241,7 +249,8 @@ func _on_panel_tiklandi(no: int) -> void:
 	if hedef_bekleyen != null:
 		if motor.kart_sec(aktif, hedef_bekleyen, no):
 			hedef_bekleyen = null
-			_sonraki_oyuncu()
+			if not motor.oyuncular[aktif].oynayabilir_mi():
+				_sonraki_oyuncu()
 		_hepsini_guncelle()
 		return
 	if motor.oyuncular[no].hayatta():
@@ -254,7 +263,7 @@ func _sonraki_oyuncu() -> void:
 	for adim in range(1, adet + 1):
 		var i := (aktif + adim) % adet
 		var o := motor.oyuncular[i]
-		if o.hayatta() and o.secilen == null:
+		if o.hayatta() and o.oynayabilir_mi():
 			aktif = i
 			return
 

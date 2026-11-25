@@ -51,7 +51,9 @@ func kart_sec(oyuncu_no: int, kart: CardData, hedef_oyuncu: int = -1) -> bool:
 	if bitti:
 		return false
 	var o := oyuncular[oyuncu_no]
-	if not o.hayatta() or not o.el.has(kart) or kart.mana > o.mana:
+	if not o.hayatta() or not o.el.has(kart) or o.secili_mi(kart):
+		return false
+	if kart.mana > o.kalan_mana():
 		return false
 	if kart.hedef == CardData.Hedef.MUTTEFIK:
 		if hedef_oyuncu < 0 or hedef_oyuncu >= oyuncular.size():
@@ -60,19 +62,22 @@ func kart_sec(oyuncu_no: int, kart: CardData, hedef_oyuncu: int = -1) -> bool:
 			return false
 	else:
 		hedef_oyuncu = -1
-	o.secilen = kart
-	o.secilen_hedef = hedef_oyuncu
+	o.secimler.append({"kart": kart, "hedef": hedef_oyuncu})
 	return true
 
 
-func secimi_kaldir(oyuncu_no: int) -> void:
-	oyuncular[oyuncu_no].secilen = null
-	oyuncular[oyuncu_no].secilen_hedef = -1
+func secimi_kaldir(oyuncu_no: int, kart: CardData) -> void:
+	var o := oyuncular[oyuncu_no]
+	for i in o.secimler.size():
+		if o.secimler[i]["kart"] == kart:
+			o.secimler.remove_at(i)
+			return
 
 
+## Herkes ya manasını bitirdi ya da oynayacak kartı kalmadı mı?
 func hepsi_hazir() -> bool:
 	for o in oyuncular:
-		if o.hayatta() and o.secilen == null:
+		if o.hayatta() and o.oynayabilir_mi():
 			return false
 	return true
 
@@ -94,8 +99,11 @@ func turu_coz() -> Array[Dictionary]:
 
 	var hamleler: Array[Dictionary] = []
 	for o in oyuncular:
-		if o.hayatta() and o.secilen != null:
-			hamleler.append({"oyuncu": o.no, "kart": o.secilen, "hedef_oyuncu": o.secilen_hedef})
+		if not o.hayatta():
+			continue
+		for i in o.secimler.size():
+			var s := o.secimler[i]
+			hamleler.append({"oyuncu": o.no, "kart": s["kart"], "hedef_oyuncu": s["hedef"], "sira": i})
 
 	for h in TurnResolver.sirala(hamleler):
 		_kart_uygula(h, olaylar)
@@ -104,11 +112,10 @@ func turu_coz() -> Array[Dictionary]:
 
 	# Oynanan kartlar atılanlara gider
 	for o in oyuncular:
-		if o.secilen != null:
-			o.el.erase(o.secilen)
-			o.atilan.append(o.secilen)
-			o.secilen = null
-			o.secilen_hedef = -1
+		for s in o.secimler:
+			o.el.erase(s["kart"])
+			o.atilan.append(s["kart"])
+		o.secimler.clear()
 
 	if boss.can <= 0:
 		bitti = true

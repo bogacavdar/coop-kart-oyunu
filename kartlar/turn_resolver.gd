@@ -2,10 +2,10 @@ class_name TurnResolver
 extends RefCounted
 ## Turda oynanan kartları tip sırasına göre dizer:
 ## Koruma -> Kontrol -> Saldırı -> İyileştirme (sonra boss hamlesi).
-## Aynı tipteki kartlar oyuncu sırasına göre işlenir.
+## Aynı tipteki kartlar oyuncu sırasına, aynı oyuncununkiler seçiliş sırasına göre işlenir.
 ##
 ## Her hamle şu şekilde bir sözlüktür:
-##   { "oyuncu": 0, "kart": CardData, "hedef_oyuncu": -1 }
+##   { "oyuncu": 0, "kart": CardData, "hedef_oyuncu": -1, "sira": 0 }
 ## hedef_oyuncu: müttefike oynanan kartlarda hedef oyuncunun numarası, değilse -1.
 
 
@@ -16,6 +16,8 @@ static func sirala(oynanan: Array[Dictionary]) -> Array[Dictionary]:
 		var tip_b: int = b["kart"].tip
 		if tip_a != tip_b:
 			return tip_a < tip_b
-		return a["oyuncu"] < b["oyuncu"]
+		if a["oyuncu"] != b["oyuncu"]:
+			return a["oyuncu"] < b["oyuncu"]
+		return a.get("sira", 0) < b.get("sira", 0)
 	)
 	return sirali

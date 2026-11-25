@@ -23,15 +23,19 @@ func _initialize() -> void:
 			for o in motor.oyuncular:
 				if not o.hayatta():
 					continue
-				var uygun: Array = o.el.filter(func(k): return k.mana <= o.mana)
-				if uygun.is_empty():
-					continue
-				var kart: CardData = uygun.pick_random()
-				var hedef := -1
-				if kart.hedef == CardData.Hedef.MUTTEFIK:
-					hedef = motor.canli_oyuncular().pick_random().no
-				if not motor.kart_sec(o.no, kart, hedef):
-					push_error("TEST HATASI: geçerli kart reddedildi: " + kart.kart_adi)
+				# Mana bitene kadar rastgele kart seç
+				while o.oynayabilir_mi():
+					var kalan := o.kalan_mana()
+					var uygun: Array = o.el.filter(func(k): return not o.secili_mi(k) and k.mana <= kalan)
+					var kart: CardData = uygun.pick_random()
+					var hedef := -1
+					if kart.hedef == CardData.Hedef.MUTTEFIK:
+						hedef = motor.canli_oyuncular().pick_random().no
+					if not motor.kart_sec(o.no, kart, hedef):
+						push_error("TEST HATASI: geçerli kart reddedildi: " + kart.kart_adi)
+						break
+				if o.harcanan_mana() > o.mana:
+					push_error("TEST HATASI: mana aşıldı")
 			motor.turu_coz()
 		if not motor.bitti:
 			push_error("TEST HATASI: savaş 80 turda bitmedi")
