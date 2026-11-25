@@ -127,9 +127,21 @@ func _savas_bitti(motor: SavasMotoru) -> void:
 		_kosu_sonu_goster()
 		return
 	kosu.botlara_odul_ver()
-	var alt := "Bot arkadaşların da kendi ödüllerini seçti."
 	if _son_tip == "elit":
-		alt = "Elit yenildi: herkesin max canı +5 arttı. " + alt
+		var t := TilsimEkrani.new(kosu.tilsim_secenekleri())
+		t.secildi.connect(func(id: String):
+			kosu.tilsim_ekle(id)
+			_kart_odulu_goster()
+		)
+		_ekrani_degistir(t)
+	else:
+		_kart_odulu_goster()
+
+
+func _kart_odulu_goster() -> void:
+	var alt := "Bot arkadaşların da kendi ödüllerini seçti."
+	if kosu.tilsimlar.has("sifaci_kolyesi"):
+		alt = "Şifacının Kolyesi takımı 8 can iyileştirdi. " + alt
 	var o := OdulEkrani.new(kosu.odul_secenekleri(kosu.insan), alt)
 	o.secildi.connect(func(kart: CardData):
 		if kart:

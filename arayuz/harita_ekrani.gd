@@ -15,7 +15,7 @@ const TIP_BILGI := {
 
 const DURAK_ACIKLAMALARI := {
 	"savas": "[b]Savaş[/b]\nNormal bir düşmanla karşılaşırsınız. Kazanınca destene bir kart seçersin.",
-	"elit": "[b]Elit Savaş[/b]\nÇok daha güçlü bir düşman. Kazanınca herkesin max canı +5 artar ve kart seçersin.",
+	"elit": "[b]Elit Savaş[/b]\nÇok daha güçlü bir düşman. Kazanınca 3 tılsımdan birini ve bir kart seçersin.",
 	"dinlenme": "[b]Kamp Ateşi[/b]\nYa takım max canının %30'u kadar iyileşir ya da bir kartını kalıcı olarak güçlendirirsin.",
 	"gizem": "[b]Gizemli Olay[/b]\nRastgele bir olay. İyi de olabilir, bedeli olan bir fırsat da.",
 	"boss": "[b]Kızıl Ejder[/b]\nKoşunun son düşmanı. Bütün takıma ateş püskürür ve savaş uzadıkça öfkelenir.",
@@ -150,6 +150,9 @@ func _takim_paneli() -> void:
 		add_child(DesteSecici.new("Destenin kartları", kosu.deste(kosu.insan)))
 	)
 	dikey.add_child(deste_btn)
+	if not kosu.tilsimlar.is_empty():
+		Arayuz.etiket(dikey, 15, "Tılsımlar", Arayuz.ALTIN).horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		dikey.add_child(Tilsimlar.serit(kosu.tilsimlar, 34.0))
 	var savas := Arayuz.etiket(dikey, 13, "Kazanılan savaş: %d" % kosu.kazanilan_savas, Color("#a8a0c0"))
 	savas.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 
@@ -164,7 +167,7 @@ func _lejant() -> void:
 	panel.add_child(dikey)
 	var aciklamalar := {
 		"savas": "Savaş: normal düşman",
-		"elit": "Elit: zor, +5 max can",
+		"elit": "Elit: zor, ödülü tılsım",
 		"dinlenme": "Dinlen: can veya kart güçlendir",
 		"gizem": "?: rastgele olay",
 		"boss": "BOSS: Kızıl Ejder",

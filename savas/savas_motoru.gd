@@ -17,11 +17,18 @@ var bitti := false
 ## Bu tur boss'un tekil saldırılarını üstüne çeken oyuncu (-1 = yok)
 var aggro := -1
 var rng := RandomNumberGenerator.new()
+## Takımın tılsımları ve savaş başında ne yaptıkları (günlüğe yazılır)
+var tilsimlar: Array = []
+var baslangic_mesajlari: PackedStringArray = []
+var el_boyutu := EL_BOYUTU
 
 
 ## kurulum: {"oyuncular": [{"sinif", "can", "max_can", "deste"}], "dusman": "id"}
 func _init(kurulum: Dictionary) -> void:
 	rng.randomize()
+	tilsimlar = kurulum.get("tilsimlar", [])
+	if tilsimlar.has("bilge_kitabi"):
+		el_boyutu = EL_BOYUTU + 1
 	var liste: Array = kurulum["oyuncular"]
 	for i in liste.size():
 		var v: Dictionary = liste[i]
@@ -33,6 +40,22 @@ func _init(kurulum: Dictionary) -> void:
 		oyuncular.append(o)
 	boss = Boss.new(Dusmanlar.tanim(kurulum["dusman"]), oyuncular.size())
 	_tur_baslat()
+	_savas_basi_tilsimlari()
+
+
+func _savas_basi_tilsimlari() -> void:
+	if tilsimlar.has("demir_yuzuk"):
+		for o in oyuncular:
+			o.zirh += 6
+		baslangic_mesajlari.append("Demir Yüzük: takım 6 zırh kazandı.")
+	if tilsimlar.has("mana_kristali"):
+		for o in oyuncular:
+			o.mana += 1
+		baslangic_mesajlari.append("Mana Kristali: herkesin bu tur 1 fazla manası var.")
+	if tilsimlar.has("savas_borusu"):
+		var kayip := int(boss.max_can * 0.1)
+		boss.can -= kayip
+		baslangic_mesajlari.append("Savaş Borusu: %s %d can kaybetti." % [boss.ad, kayip])
 
 
 ## Testler için: başlangıç desteleriyle, tam canla tek bir savaş kurulumu
@@ -285,7 +308,11 @@ func _tur_baslat() -> void:
 		o.zirh = 0
 		o.mana = mini(tur, MAKS_MANA)
 		if o.hayatta():
-			o.kart_cek(EL_BOYUTU - o.el.size())
+			o.kart_cek(el_boyutu - o.el.size())
+	if tilsimlar.has("avci_pusulasi"):
+		boss.isaret += 2
+	if tilsimlar.has("ejder_pulu"):
+		boss.zayiflik += 2
 	_niyet_belirle()
 
 

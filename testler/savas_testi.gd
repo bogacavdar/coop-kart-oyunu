@@ -21,6 +21,7 @@ func _initialize() -> void:
 	_rapor("1 rastgele + 3 bot", havuz, 3)
 	for d in Dusmanlar.NORMAL + Dusmanlar.ELIT:
 		_dusman_raporu(havuz, d)
+	_tilsim_raporu(havuz)
 	_kosu_raporu(havuz)
 	print("TEST TAMAM")
 	quit()
@@ -94,6 +95,7 @@ func _botlarla_oyna(motor: SavasMotoru) -> void:
 ## Bütün koşuyu 4 botla baştan sona oynatır
 func _kosu_raporu(havuz: Dictionary) -> void:
 	var kazanilan := 0
+	var toplam_tilsim := 0
 	var olum_katmani := {}
 	for i in 150:
 		var kosu := Kosu.new(havuz, -1)
@@ -113,6 +115,10 @@ func _kosu_raporu(havuz: Dictionary) -> void:
 					kosu.savas_sonucu(motor, d["tip"])
 					if not kosu.bitti:
 						kosu.botlara_odul_ver()
+						if d["tip"] == "elit":
+							var tilsimlar := kosu.tilsim_secenekleri()
+							if not tilsimlar.is_empty():
+								kosu.tilsim_ekle(tilsimlar.pick_random())
 				"dinlenme":
 					if randf() < 0.5:
 						kosu.dinlen()
@@ -128,8 +134,25 @@ func _kosu_raporu(havuz: Dictionary) -> void:
 			kazanilan += 1
 		else:
 			olum_katmani[kosu.katman] = olum_katmani.get(kosu.katman, 0) + 1
+		toplam_tilsim += kosu.tilsimlar.size()
 		for v in kosu.takim:
 			for k in v["deste"]:
 				if not (k is CardData):
 					push_error("TEST HATASI: destede geçersiz kart")
-	print("TEST: KOŞU 4 bot %d/150 kazandı; düşülen katmanlar: %s" % [kazanilan, str(olum_katmani)])
+	print("TEST: KOŞU 4 bot %d/150 kazandı; ort. %.1f tılsım; düşülen katmanlar: %s" % [
+		kazanilan, toplam_tilsim / 150.0, str(olum_katmani)])
+
+
+## Bütün tılsımlar açıkken boss savaşı: hata çıkıyor mu, ne kadar güçlendiriyor?
+func _tilsim_raporu(havuz: Dictionary) -> void:
+	var zafer := 0
+	for oyun in 100:
+		var kurulum := SavasMotoru.hizli_kurulum(havuz)
+		kurulum["tilsimlar"] = Tilsimlar.LISTE.keys()
+		var motor := SavasMotoru.new(kurulum)
+		if motor.oyuncular[0].el.size() != 5:
+			push_error("TEST HATASI: Bilge Kitabı eli 5 yapmadı")
+		_botlarla_oyna(motor)
+		if motor.boss.can <= 0:
+			zafer += 1
+	print("TEST: bütün tılsımlarla boss -> 4 bot %d/100" % zafer)

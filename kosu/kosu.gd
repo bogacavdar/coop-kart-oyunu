@@ -23,7 +23,7 @@ const KATMAN_TIPLERI := [
 	["dinlenme"],
 	["boss"],
 ]
-const GIZEMLER: Array[String] = ["peri_pinari", "kara_ayna", "yasli_munzevi"]
+const GIZEMLER: Array[String] = ["peri_pinari", "kara_ayna", "yasli_munzevi", "eski_sandik"]
 const MIN_DESTE := 6
 
 var rng := RandomNumberGenerator.new()
@@ -39,6 +39,8 @@ var sira := -1
 var bitti := false
 var kazandi := false
 var kazanilan_savas := 0
+## Takımın tılsımları (id listesi)
+var tilsimlar: Array[String] = []
 
 
 func _init(p_havuz: Dictionary, p_insan: int) -> void:
@@ -123,7 +125,7 @@ func savas_kurulumu(tip: String) -> Dictionary:
 	var liste: Array = []
 	for v in takim:
 		liste.append({"sinif": v["sinif"], "can": v["can"], "max_can": v["max_can"], "deste": v["deste"]})
-	return {"oyuncular": liste, "dusman": dusman}
+	return {"oyuncular": liste, "dusman": dusman, "tilsimlar": tilsimlar.duplicate()}
 
 
 ## Savaş bittikten sonra canları takıma geri yazar. Düşenler çeyrek canla kalkar.
@@ -136,12 +138,33 @@ func savas_sonucu(motor: SavasMotoru, tip: String) -> void:
 	for o in motor.oyuncular:
 		var v := takim[o.no]
 		v["can"] = o.can if o.hayatta() else maxi(1, int(v["max_can"] / 4.0))
-		if tip == "elit":
-			v["max_can"] += 5
-			v["can"] += 5
+		if tilsimlar.has("sifaci_kolyesi"):
+			v["can"] = mini(v["max_can"], v["can"] + 8)
 	if tip == "boss":
 		bitti = true
 		kazandi = true
+
+
+# --- Tılsımlar ------------------------------------------------------------
+
+func tilsim_secenekleri(adet: int = 3) -> Array[String]:
+	var aday: Array = Tilsimlar.LISTE.keys().filter(func(id): return not tilsimlar.has(id))
+	var liste: Array[String] = []
+	while liste.size() < adet and not aday.is_empty():
+		var i := rng.randi_range(0, aday.size() - 1)
+		liste.append(aday[i])
+		aday.remove_at(i)
+	return liste
+
+
+func tilsim_ekle(id: String) -> void:
+	if id == "" or tilsimlar.has(id):
+		return
+	tilsimlar.append(id)
+	if id == "altin_kase":
+		for v in takim:
+			v["max_can"] += 8
+			v["can"] += 8
 
 
 # --- Kartlar --------------------------------------------------------------
@@ -248,6 +271,15 @@ func gizem_sec() -> Dictionary:
 					{"id": "bak", "metin": "Bak: herkesin rastgele bir kartı güçlenir, ama herkes 8 can kaybeder"},
 					{"id": "gec", "metin": "Arkana bakmadan geç"},
 				]}
+		"eski_sandik":
+			if tilsim_secenekleri(1).is_empty():
+				return gizem_sec()
+			return {"id": id, "baslik": "Eski Sandık",
+				"metin": "Bir mağaranın dibinde paslı zincirlerle bağlı eski bir sandık buldunuz. Kilidin etrafında tuzak mekanizmaları var.",
+				"secenekler": [
+					{"id": "sandik", "metin": "Zorla aç: rastgele bir tılsım kazanırsınız, ama tuzak herkese 10 hasar verir"},
+					{"id": "gec", "metin": "Dokunmadan geç"},
+				]}
 		_:
 			return {"id": "yasli_munzevi", "baslik": "Yaşlı Münzevi",
 				"metin": "Mağarasında tek başına yaşayan yaşlı bir münzevi yükünüzü hafifletmeyi teklif ediyor. \"Gereksiz olanı bırak\" diyor.",
@@ -277,6 +309,13 @@ func gizem_uygula(secenek_id: String) -> String:
 				_rastgele_guclendir(v["sinif"])
 			_herkese_hasar(8)
 			return "Aynadaki görüntü içinizi ürpertti ama güçlendirdi. Herkesin bir kartı güçlendi, herkes 8 can kaybetti."
+		"sandik":
+			var bulunan := tilsim_secenekleri(1)
+			_herkese_hasar(10)
+			if bulunan.is_empty():
+				return "Sandık boş çıktı ve tuzak çalıştı. Herkes 10 can kaybetti."
+			tilsim_ekle(bulunan[0])
+			return "Tuzak patladı ama sandıktan bir tılsım çıktı: %s! (%s)" % [Tilsimlar.ad(bulunan[0]), Tilsimlar.aciklama(bulunan[0])]
 		"fal":
 			botlar_kart_cikarsin()
 			return "Münzevi başını salladı. \"Hafiflediniz\" dedi ve mağarasına çekildi."

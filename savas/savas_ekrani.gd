@@ -50,6 +50,12 @@ func baslat(kurulum: Dictionary, p_insan: int) -> void:
 	motor = SavasMotoru.new(kurulum)
 	_arayuzu_kur()
 	_log_yaz("[b]Tur 1[/b] başladı. Rakip: %s" % motor.boss.ad)
+	for m in motor.baslangic_mesajlari:
+		_log_yaz("[color=#e8c27a]%s[/color]" % m)
+	if not motor.tilsimlar.is_empty():
+		var serit := Tilsimlar.serit(motor.tilsimlar, 34.0)
+		serit.position = Vector2(20, 140)
+		add_child(serit)
 	_botlari_planla()
 	_hepsini_guncelle()
 
