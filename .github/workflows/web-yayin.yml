@@ -105,6 +105,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     continue-on-error: true
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -119,11 +121,15 @@ jobs:
           sleep 2
           node ekran.js ana savas:tas_golem savas:iskelet_lejyonu savas:hayalet savas:lich_kral savas:kara_sovalye
           mkdir -p ../../ekranlar && mv ekran_*.png ../../ekranlar/
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ekranlar
-          path: ekranlar
-          retention-days: 7
+      - name: Görüntüleri "ekranlar" dalına kaydet
+        run: |
+          cd ekranlar
+          git init -q -b ekranlar
+          git config user.name "ekran-botu"
+          git config user.email "ekran-botu@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Ekran görüntüleri ${GITHUB_SHA::7}"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" ekranlar:ekranlar
 
   deploy:
     needs: build
