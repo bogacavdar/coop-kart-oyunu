@@ -39,8 +39,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "alan", "ad": "Deprem", "hasar": 14, "agirlik": 30},
 					{"tur": "kalkan", "ad": "Taş Kabuk", "miktar": 16, "agirlik": 20},
 				],
-				"gorunum": {"sekil": "golem", "renk": "#55545c", "goz": "#6fd0ff", "yaricap": 74.0,
-					"model": {"dosya": "res://varliklar/modeller/quaternius/Flying/Goleling_Evolved.gltf", "saldiri": "Headbutt", "vurulma": "HitReact", "olum": "Death", "bekleme": "Flying_Idle"}}}
+				"gorunum": {"sekil": "golem", "renk": "#55545c", "goz": "#6fd0ff", "yaricap": 74.0}
 		"goblin_cetesi":
 			return {"id": id, "ad": "Goblin Çetesi", "tip": "normal", "can": 38, "guc_artisi": 1,
 				"hamleler": [
@@ -49,7 +48,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "guc", "ad": "Savaş Davulu", "miktar": 3, "agirlik": 20},
 				],
 				"gorunum": {"sekil": "goblin", "renk": "#56762e", "goz": "#ffd84a", "yaricap": 66.0,
-					"model": {"dosya": "res://varliklar/modeller/quaternius/Blob/Orc.gltf", "saldiri": "Bite_Front", "vurulma": "HitRecieve", "olum": "Death", "bekleme": "Idle"}}}
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Rogue_Hooded.glb", "renk": "#9ccf6e", "olcek": 0.85, "saldiri": "Dualwield_Melee_Attack_Stab"}
 		"magara_trolu":
 			return {"id": id, "ad": "Mağara Trolü", "tip": "normal", "can": 33, "guc_artisi": 1,
 				"hamleler": [
@@ -68,7 +67,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "guc", "ad": "Kara Ayin", "miktar": 4, "agirlik": 20},
 				],
 				"gorunum": {"sekil": "cadi", "renk": "#33234a", "goz": "#9dff6a", "yaricap": 80.0,
-					"model": {"dosya": "res://varliklar/modeller/quaternius/Blob/Wizard.gltf", "saldiri": "Bite_Front", "vurulma": "HitRecieve", "olum": "Death", "bekleme": "Idle", "renk": "#a888d8"}}}
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Mage.glb", "renk": "#8fc488", "saldiri": "Spellcast_Shoot", "bekleme": "Idle"}
 		"ork_savas_beyi":
 			return {"id": id, "ad": "Ork Savaş Beyi", "tip": "elit", "can": 62, "guc_artisi": 2,
 				"hamleler": [
@@ -78,7 +77,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "cift", "ad": "Çifte Balta", "hasar": 23, "agirlik": 15},
 				],
 				"gorunum": {"sekil": "ork", "renk": "#4e5e2a", "goz": "#ff4a3a", "yaricap": 82.0,
-					"model": {"dosya": "res://varliklar/modeller/quaternius/Big/Orc_Skull.gltf", "saldiri": "Weapon", "vurulma": "HitReact", "olum": "Death", "bekleme": "Idle"}}}
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Barbarian.glb", "renk": "#7fb060", "olcek": 1.18, "saldiri": "2H_Melee_Attack_Chop"}
 		# --- 2. bölüm ---
 		"iskelet_lejyonu":
 			return {"id": id, "ad": "İskelet Lejyonu", "tip": "normal", "can": 48, "guc_artisi": 1,
@@ -128,7 +127,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "emme", "ad": "Ruh Isırığı", "hasar": 25, "agirlik": 30},
 				],
 				"gorunum": {"sekil": "kemik_ejder", "renk": "#d8d0b8", "goz": "#9dff6a", "yaricap": 86.0,
-					"model": {"dosya": "res://varliklar/modeller/quaternius/Flying/Dragon_Evolved.gltf", "saldiri": "Punch", "vurulma": "HitReact", "olum": "Death", "bekleme": "Flying_Idle", "renk": "#e8e0d0"}}}
+					"model": {"dosya": "res://varliklar/modeller/quaternius/Flying/Dragon_Evolved.gltf", "saldiri": "Punch", "vurulma": "HitReact", "olum": "Death", "bekleme": "Flying_Idle", "renk": "#ddd5c0", "renk_modu": "degistir"}}}
 		"lich_kral":
 			return {"id": id, "ad": "Lich Kral", "tip": "boss", "can": 110, "guc_artisi": 3,
 				"hamleler": [

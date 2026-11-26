@@ -14,4 +14,4 @@ Oyun motoru: Godot Engine (MIT lisansı, godotengine.org)
 Arayüz çerçeveleri: Kenney - Fantasy UI Borders (CC0, www.kenney.nl)
 
 3D modeller: Quaternius - Ultimate Monsters (CC0, quaternius.com)
-KayKit - Character Pack: Skeletons, Kay Lousberg (CC0, www.kaylousberg.com)
+KayKit - Character Pack: Skeletons ve Adventurers, Kay Lousberg (CC0, www.kaylousberg.com)

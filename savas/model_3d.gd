@@ -80,8 +80,13 @@ func _renklendir(dugum: Node, renk: Color, saydam: float) -> void:
 			if asil is StandardMaterial3D:
 				var kopya: StandardMaterial3D = asil.duplicate()
 				if not String(asil.resource_name).to_lower().contains("glow"):
-					# Çarparak boya: dokulu modellerde doku, renkli modellerde her parçanın kendi rengi korunur
-					kopya.albedo_color = asil.albedo_color * renk
+					if str(ayar.get("renk_modu", "carp")) == "degistir":
+						# Bütün parçalar tek renge boyanır (ör. kemik rengi ejder)
+						kopya.albedo_color = renk
+						kopya.albedo_texture = null
+					else:
+						# Çarparak boya: dokulu modellerde doku, renkli modellerde her parçanın kendi rengi korunur
+						kopya.albedo_color = asil.albedo_color * renk
 				if saydam < 1.0:
 					kopya.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 					kopya.albedo_color.a = saydam
