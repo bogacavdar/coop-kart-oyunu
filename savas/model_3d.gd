@@ -64,8 +64,8 @@ func _init(p_ayar: Dictionary, boyut: Vector2) -> void:
 
 	_ap = _model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	_bekleme = str(ayar.get("bekleme", "Idle"))
-	if _ap:
-		var anim := _ap.get_animation(_bekleme)
+	if _ap and _bul(_bekleme) != "":
+		var anim := _ap.get_animation(_bul(_bekleme))
 		if anim:
 			anim.loop_mode = Animation.LOOP_LINEAR
 		_oynat(_bekleme)
@@ -80,7 +80,8 @@ func _renklendir(dugum: Node, renk: Color, saydam: float) -> void:
 			if asil is StandardMaterial3D:
 				var kopya: StandardMaterial3D = asil.duplicate()
 				if not String(asil.resource_name).to_lower().contains("glow"):
-					kopya.albedo_color = renk
+					# Çarparak boya: dokulu modellerde doku, renkli modellerde her parçanın kendi rengi korunur
+					kopya.albedo_color = asil.albedo_color * renk
 				if saydam < 1.0:
 					kopya.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 					kopya.albedo_color.a = saydam
@@ -89,12 +90,25 @@ func _renklendir(dugum: Node, renk: Color, saydam: float) -> void:
 		_renklendir(c, renk, saydam)
 
 
+## Animasyonu adıyla bulur ("Armature|Idle" gibi önekli adları da tanır)
+func _bul(ad: String) -> String:
+	if _ap == null:
+		return ""
+	if _ap.has_animation(ad):
+		return ad
+	for a in _ap.get_animation_list():
+		if a.ends_with("|" + ad) or a.ends_with("/" + ad):
+			return a
+	return ""
+
+
 func _oynat(ad: String, sonra_bekle: bool = false) -> void:
-	if _ap == null or not _ap.has_animation(ad):
+	var gercek := _bul(ad)
+	if gercek == "":
 		return
-	_ap.play(ad, 0.15)
-	if sonra_bekle:
-		_ap.queue(_bekleme)
+	_ap.play(gercek, 0.15)
+	if sonra_bekle and _bul(_bekleme) != "":
+		_ap.queue(_bul(_bekleme))
 
 
 func saldir() -> void:

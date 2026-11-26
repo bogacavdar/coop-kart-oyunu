@@ -119,7 +119,7 @@ jobs:
           cd testler/ekran
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --no-save playwright@1.49.0 >/dev/null 2>&1
           sleep 2
-          node ekran.js ana savas:tas_golem savas:iskelet_lejyonu savas:hayalet savas:lich_kral savas:kara_sovalye
+          node ekran.js savas:tas_golem savas:goblin_cetesi savas:magara_trolu savas:bataklik_cadisi savas:ork_savas_beyi savas:kizil_ejder savas:hayalet savas:kemik_ejderi
           mkdir -p ../../ekranlar && mv ekran_*.png ../../ekranlar/
       - name: Görüntüleri "ekranlar" dalına kaydet
         run: |
