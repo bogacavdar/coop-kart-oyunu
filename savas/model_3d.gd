@@ -49,8 +49,8 @@ func _init(p_ayar: Dictionary, boyut: Vector2) -> void:
 
 	var kamera := Camera3D.new()
 	kamera.fov = 32
-	var konum := Vector3(0, float(ayar.get("kamera_y", 1.35)), float(ayar.get("uzaklik", 4.6)))
-	var hedef := Vector3(0, float(ayar.get("hedef_y", 1.0)), 0)
+	var konum := Vector3(0, float(ayar.get("kamera_y", 1.6)), float(ayar.get("uzaklik", 7.2)))
+	var hedef := Vector3(0, float(ayar.get("hedef_y", 1.15)), 0)
 	kamera.transform = Transform3D(Basis.looking_at(hedef - konum, Vector3.UP), konum)
 	_vp.add_child(kamera)
 

@@ -94,7 +94,7 @@ static func tanim(id: String) -> Dictionary:
 				],
 				"gorunum": {"sekil": "hayalet", "renk": "#8aa4cc", "goz": "#d0f4ff", "yaricap": 74.0,
 					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Rogue.glb",
-						"renk": "#a8d0ff", "saydam": 0.55, "saldiri": "Spellcast_Shoot"}}}
+						"renk": "#6fa8ff", "saydam": 0.4, "saldiri": "Spellcast_Shoot"}}}
 		"mumya":
 			return {"id": id, "ad": "Kadim Mumya", "tip": "normal", "can": 52, "guc_artisi": 1,
 				"hamleler": [
@@ -135,7 +135,7 @@ static func tanim(id: String) -> Dictionary:
 				],
 				"gorunum": {"sekil": "lich", "renk": "#4a3a6a", "goz": "#7affb0", "yaricap": 94.0,
 					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Mage.glb",
-						"olcek": 1.22, "saldiri": "Spellcast_Shoot", "bekleme": "Idle_Combat"}}}
+						"renk": "#7a68b0", "olcek": 1.15, "saldiri": "Spellcast_Shoot", "bekleme": "Idle_Combat"}}}
 		_:
 			return {"id": BOSS, "ad": "Kızıl Ejder", "tip": "boss", "can": 85, "guc_artisi": 3,
 				"hamleler": [

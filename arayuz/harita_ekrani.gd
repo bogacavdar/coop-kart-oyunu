@@ -127,7 +127,9 @@ func _cizgileri_ciz() -> void:
 func _takim_paneli() -> void:
 	var panel := PanelContainer.new()
 	panel.position = Vector2(20, 100)
-	panel.add_theme_stylebox_override("panel", Arayuz.kutu_stili(Color(0.06, 0.04, 0.12, 0.85), Color("#3a3360")))
+	var panel_stili := Arayuz.kutu_stili(Color(0.06, 0.04, 0.12, 0.85), Color("#3a3360"))
+	panel_stili.set_content_margin_all(18)
+	panel.add_theme_stylebox_override("panel", panel_stili)
 	add_child(panel)
 	Arayuz.susle(panel, Color("#b8a060"), Arayuz.PANEL_CERCEVESI, -6.0)
 	var dikey := VBoxContainer.new()
@@ -166,7 +168,9 @@ func _takim_paneli() -> void:
 func _lejant() -> void:
 	var panel := PanelContainer.new()
 	panel.position = Vector2(1040, 100)
-	panel.add_theme_stylebox_override("panel", Arayuz.kutu_stili(Color(0.06, 0.04, 0.12, 0.85), Color("#3a3360")))
+	var panel_stili := Arayuz.kutu_stili(Color(0.06, 0.04, 0.12, 0.85), Color("#3a3360"))
+	panel_stili.set_content_margin_all(18)
+	panel.add_theme_stylebox_override("panel", panel_stili)
 	add_child(panel)
 	Arayuz.susle(panel, Color("#b8a060"), Arayuz.PANEL_CERCEVESI, -6.0)
 	var dikey := VBoxContainer.new()

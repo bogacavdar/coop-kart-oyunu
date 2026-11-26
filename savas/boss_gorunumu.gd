@@ -41,8 +41,8 @@ func ayarla(g: Dictionary) -> void:
 		model = null
 	if not m.is_empty() and ResourceLoader.exists(str(m.get("dosya", ""))):
 		# Model, boss alanından daha uzun: ayakları alanın altına, başı yukarı taşar
-		model = Model3D.new(m, Vector2(BOYUT.x, BOYUT.y + 110))
-		model.position = Vector2(0, -95)
+		model = Model3D.new(m, Vector2(BOYUT.x, BOYUT.y + 60))
+		model.position = Vector2(0, -38)
 		add_child(model)
 
 

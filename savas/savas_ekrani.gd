@@ -7,10 +7,10 @@ extends Control
 
 signal savas_bitti(motor: SavasMotoru)
 
-const BOSS_MERKEZI := Vector2(640, 285)
+const BOSS_MERKEZI := Vector2(640, 292)
 ## Koltukların portre merkezleri: alt (sen), sol, üst, sağ
 const KOLTUK_MERKEZLERI: Array[Vector2] = [
-	Vector2(498, 520), Vector2(150, 285), Vector2(640, 64), Vector2(1130, 285),
+	Vector2(498, 520), Vector2(150, 285), Vector2(640, 54), Vector2(1130, 285),
 ]
 const EL_Y := 668.0
 const EL_ARALIK := 132.0
@@ -103,7 +103,9 @@ func _arayuzu_kur() -> void:
 	_niyet_kutu.position = Vector2(790, 150)
 	_niyet_kutu.mouse_filter = Control.MOUSE_FILTER_STOP
 	Ipucu.baglan(_niyet_kutu, _niyet_ipucu)
-	_niyet_kutu.add_theme_stylebox_override("panel", _kutu_stili(Color(0.1, 0.05, 0.02, 0.85), Color("#ffb347")))
+	var niyet_stili := _kutu_stili(Color(0.1, 0.05, 0.02, 0.85), Color("#ffb347"))
+	niyet_stili.set_content_margin_all(18)
+	_niyet_kutu.add_theme_stylebox_override("panel", niyet_stili)
 	add_child(_niyet_kutu)
 	Arayuz.susle(_niyet_kutu, Color("#ffb347"), Arayuz.PANEL_CERCEVESI, -6.0)
 	_niyet = Label.new()
@@ -132,7 +134,9 @@ func _arayuzu_kur() -> void:
 	var log_panel := PanelContainer.new()
 	log_panel.position = Vector2(14, 585)
 	log_panel.size = Vector2(250, 122)
-	log_panel.add_theme_stylebox_override("panel", _kutu_stili(Color(0.05, 0.04, 0.1, 0.8), Color("#3a3360")))
+	var log_stili := _kutu_stili(Color(0.05, 0.04, 0.1, 0.8), Color("#3a3360"))
+	log_stili.set_content_margin_all(16)
+	log_panel.add_theme_stylebox_override("panel", log_stili)
 	add_child(log_panel)
 	Arayuz.susle(log_panel, Color("#8a7fd0"), Arayuz.PANEL_CERCEVESI, -6.0)
 	_log = RichTextLabel.new()
@@ -160,7 +164,9 @@ func _arayuzu_kur() -> void:
 	# Hedef seçme bandı (müttefik kartı seçilince görünür)
 	_hedef_bandi = PanelContainer.new()
 	_hedef_bandi.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hedef_bandi.add_theme_stylebox_override("panel", _kutu_stili(Color(0.02, 0.12, 0.06, 0.92), Color("#7dffa0")))
+	var bant_stili := _kutu_stili(Color(0.02, 0.12, 0.06, 0.92), Color("#7dffa0"))
+	bant_stili.set_content_margin_all(18)
+	_hedef_bandi.add_theme_stylebox_override("panel", bant_stili)
 	_hedef_bandi.z_index = 60
 	_hedef_bandi.visible = false
 	add_child(_hedef_bandi)
