@@ -107,7 +107,7 @@ func _arayuzu_kur() -> void:
 	niyet_stili.set_content_margin_all(24)
 	_niyet_kutu.add_theme_stylebox_override("panel", niyet_stili)
 	add_child(_niyet_kutu)
-	Arayuz.susle(_niyet_kutu, Color("#ffb347"), Arayuz.PANEL_CERCEVESI, -6.0)
+	Arayuz.susle(_niyet_kutu, Color("#ffb347"), Arayuz.PANEL_CERCEVESI, 3.0)
 	_niyet = Label.new()
 	_niyet.custom_minimum_size = Vector2(210, 0)
 	_niyet.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -138,7 +138,7 @@ func _arayuzu_kur() -> void:
 	log_stili.set_content_margin_all(24)
 	log_panel.add_theme_stylebox_override("panel", log_stili)
 	add_child(log_panel)
-	Arayuz.susle(log_panel, Color("#8a7fd0"), Arayuz.PANEL_CERCEVESI, -6.0)
+	Arayuz.susle(log_panel, Color("#8a7fd0"), Arayuz.PANEL_CERCEVESI, 3.0)
 	_log = RichTextLabel.new()
 	_log.bbcode_enabled = true
 	_log.scroll_following = true
@@ -170,7 +170,7 @@ func _arayuzu_kur() -> void:
 	_hedef_bandi.z_index = 60
 	_hedef_bandi.visible = false
 	add_child(_hedef_bandi)
-	Arayuz.susle(_hedef_bandi, Color("#7dffa0"), Arayuz.PANEL_CERCEVESI, -6.0)
+	Arayuz.susle(_hedef_bandi, Color("#7dffa0"), Arayuz.PANEL_CERCEVESI, 3.0)
 	_hedef_yazisi = Label.new()
 	_hedef_yazisi.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hedef_yazisi.add_theme_font_size_override("font_size", 19)

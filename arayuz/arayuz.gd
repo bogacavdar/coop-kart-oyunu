@@ -26,7 +26,14 @@ static func susle(kutu: Control, renk: Color, doku: String = PANEL_CERCEVESI, bo
 	c.offset_right = -boslik
 	c.offset_bottom = -boslik
 	if kutu is Container:
-		# Container çocukları kendi yerleştirir; çerçeveyi ayrı bir katmanda tut
+		# Container çocukları içerik alanına yerleştirir: çerçeveyi panelin dış kenarına taşımak
+		# için kutunun iç boşluklarını (content margin) geri ekle
+		var sb := kutu.get_theme_stylebox("panel")
+		if sb:
+			c.offset_left = boslik - sb.get_content_margin(SIDE_LEFT)
+			c.offset_top = boslik - sb.get_content_margin(SIDE_TOP)
+			c.offset_right = -boslik + sb.get_content_margin(SIDE_RIGHT)
+			c.offset_bottom = -boslik + sb.get_content_margin(SIDE_BOTTOM)
 		var katman := Control.new()
 		katman.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		katman.set_anchors_preset(Control.PRESET_FULL_RECT)

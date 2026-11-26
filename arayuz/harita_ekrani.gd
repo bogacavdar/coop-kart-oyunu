@@ -131,7 +131,7 @@ func _takim_paneli() -> void:
 	panel_stili.set_content_margin_all(24)
 	panel.add_theme_stylebox_override("panel", panel_stili)
 	add_child(panel)
-	Arayuz.susle(panel, Color("#b8a060"), Arayuz.PANEL_CERCEVESI, -6.0)
+	Arayuz.susle(panel, Color("#b8a060"), Arayuz.PANEL_CERCEVESI, 3.0)
 	var dikey := VBoxContainer.new()
 	dikey.add_theme_constant_override("separation", 8)
 	panel.add_child(dikey)
@@ -172,7 +172,7 @@ func _lejant() -> void:
 	panel_stili.set_content_margin_all(24)
 	panel.add_theme_stylebox_override("panel", panel_stili)
 	add_child(panel)
-	Arayuz.susle(panel, Color("#b8a060"), Arayuz.PANEL_CERCEVESI, -6.0)
+	Arayuz.susle(panel, Color("#b8a060"), Arayuz.PANEL_CERCEVESI, 3.0)
 	var dikey := VBoxContainer.new()
 	panel.add_child(dikey)
 	var aciklamalar := {
