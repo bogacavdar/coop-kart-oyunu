@@ -21,7 +21,25 @@ func _ready() -> void:
 	Masa.tema = 1
 	kayit = Kayit.yukle()
 	secili_kademe = kayit.deger("acik_kademe")
+	var onizleme := _onizleme_modu()
+	if onizleme.begins_with("savas:"):
+		var dusman := onizleme.substr(6)
+		Masa.tema = 2 if Dusmanlar.NORMAL_2.has(dusman) or Dusmanlar.ELIT_2.has(dusman) or dusman == Dusmanlar.BOSS_2 else 1
+		var s := SavasEkrani.new()
+		_ekrani_degistir(s)
+		s.baslat(SavasMotoru.hizli_kurulum(havuz, dusman), CardData.Sinif.HASARCI)
+		return
 	_sinif_secimi_goster()
+
+
+## Tarayıcı adresindeki ?onizleme=... değeri (ekran görüntüsü almak için)
+func _onizleme_modu() -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var arama = JavaScriptBridge.eval("window.location.search", true)
+	if arama is String and arama.contains("onizleme="):
+		return arama.split("onizleme=")[1].split("&")[0].uri_decode()
+	return ""
 
 
 func _ekrani_degistir(yeni: Control) -> void:

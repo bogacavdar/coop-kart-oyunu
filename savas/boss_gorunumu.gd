@@ -13,6 +13,8 @@ var goz_renk := Color("#ffd040")
 var gorsel: Texture2D
 ## game-icons.net'ten düşman ikonu (varliklar/ikonlar/dusman_<sekil>.svg)
 var ikon: Texture2D
+## Varsa animasyonlu 3D model (ikonun yerine geçer)
+var model: Model3D
 var _zaman := 0.0
 var _nabiz := 0.0
 var _temel_konum := Vector2.ZERO
@@ -33,6 +35,15 @@ func ayarla(g: Dictionary) -> void:
 	yaricap = float(g.get("yaricap", 92.0))
 	var yol := "res://varliklar/ikonlar/dusman_%s.svg" % sekil
 	ikon = load(yol) if ResourceLoader.exists(yol) else null
+	var m: Dictionary = g.get("model", {})
+	if model:
+		model.queue_free()
+		model = null
+	if not m.is_empty() and ResourceLoader.exists(str(m.get("dosya", ""))):
+		# Model, boss alanından daha uzun: ayakları alanın altına, başı yukarı taşar
+		model = Model3D.new(m, Vector2(BOYUT.x, BOYUT.y + 110))
+		model.position = Vector2(0, -95)
+		add_child(model)
 
 
 func yerlestir(merkez: Vector2) -> void:
@@ -56,6 +67,15 @@ func _draw() -> void:
 	if gorsel:
 		var r := Vector2(yaricap, yaricap) * 1.2
 		draw_texture_rect(gorsel, Rect2(BOYUT / 2.0 - r, r * 2), false)
+		return
+
+	if model:
+		# 3D modelin ayağının altına yere düşen gölge
+		var golge := PackedVector2Array()
+		for i in 32:
+			var a := TAU * i / 32.0
+			golge.append(BOYUT / 2.0 + Vector2(0, 92) + Vector2(cos(a) * 70, sin(a) * 16))
+		draw_colored_polygon(golge, Color(0, 0, 0, 0.45))
 		return
 
 	if ikon:
@@ -237,6 +257,8 @@ func vur() -> void:
 		_tween.kill()
 	position = _temel_konum
 	modulate = Color(2.0, 1.1, 1.1)
+	if model:
+		model.vurul()
 	_tween = create_tween()
 	for i in 4:
 		_tween.tween_property(self, "position", _temel_konum + Vector2(randf_range(-9, 9), randf_range(-5, 5)), 0.04)
@@ -244,8 +266,16 @@ func vur() -> void:
 	_tween.parallel().tween_property(self, "modulate", Color.WHITE, 0.2)
 
 
+func ol() -> void:
+	if model:
+		model.ol()
+
+
 ## Saldırırken büyüyüp geri döner
 func saldir() -> void:
+	if model:
+		model.saldir()
+		return
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2.ONE * 1.15, 0.15).set_trans(Tween.TRANS_BACK)
 	tw.tween_property(self, "scale", Vector2.ONE, 0.2)

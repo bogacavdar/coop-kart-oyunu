@@ -82,7 +82,9 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "alan", "ad": "Kemik Fırtınası", "hasar": 15, "agirlik": 35},
 					{"tur": "kalkan", "ad": "Kalkan Duvarı", "miktar": 20, "agirlik": 25},
 				],
-				"gorunum": {"sekil": "iskelet", "renk": "#cfc6aa", "goz": "#7affd0", "yaricap": 80.0}}
+				"gorunum": {"sekil": "iskelet", "renk": "#cfc6aa", "goz": "#7affd0", "yaricap": 80.0,
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Warrior.glb",
+						"saldiri": "1H_Melee_Attack_Slice_Diagonal"}}}
 		"hayalet":
 			return {"id": id, "ad": "Feryatçı Hayalet", "tip": "normal", "can": 40, "guc_artisi": 1,
 				"hamleler": [
@@ -90,7 +92,9 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "emme", "ad": "Can Emme", "hasar": 24, "agirlik": 40},
 					{"tur": "guc", "ad": "Fısıltılar", "miktar": 3, "agirlik": 20},
 				],
-				"gorunum": {"sekil": "hayalet", "renk": "#8aa4cc", "goz": "#d0f4ff", "yaricap": 74.0}}
+				"gorunum": {"sekil": "hayalet", "renk": "#8aa4cc", "goz": "#d0f4ff", "yaricap": 74.0,
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Rogue.glb",
+						"renk": "#a8d0ff", "saydam": 0.55, "saldiri": "Spellcast_Shoot"}}}
 		"mumya":
 			return {"id": id, "ad": "Kadim Mumya", "tip": "normal", "can": 52, "guc_artisi": 1,
 				"hamleler": [
@@ -98,7 +102,9 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "alan", "ad": "Lanetli Toz", "hasar": 16, "agirlik": 35},
 					{"tur": "iyiles", "ad": "Kadim Büyü", "miktar": 20, "agirlik": 20},
 				],
-				"gorunum": {"sekil": "mumya", "renk": "#b39c6c", "goz": "#ff6a3a", "yaricap": 76.0}}
+				"gorunum": {"sekil": "mumya", "renk": "#b39c6c", "goz": "#ff6a3a", "yaricap": 76.0,
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Minion.glb",
+						"renk": "#e2cc9c", "saldiri": "Unarmed_Melee_Attack_Punch_A"}}}
 		"kara_sovalye":
 			return {"id": id, "ad": "Kara Şövalye", "tip": "elit", "can": 75, "guc_artisi": 2,
 				"hamleler": [
@@ -107,7 +113,9 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "cift", "ad": "Çifte Darbe", "hasar": 30, "agirlik": 30},
 					{"tur": "guc", "ad": "Karanlık Yemin", "miktar": 4, "agirlik": 15},
 				],
-				"gorunum": {"sekil": "kara_sovalye", "renk": "#5a5a6e", "goz": "#ff3a3a", "yaricap": 84.0}}
+				"gorunum": {"sekil": "kara_sovalye", "renk": "#5a5a6e", "goz": "#ff3a3a", "yaricap": 84.0,
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Warrior.glb",
+						"renk": "#6a6478", "olcek": 1.12, "saldiri": "2H_Melee_Attack_Chop"}}}
 		"kemik_ejderi":
 			return {"id": id, "ad": "Kemik Ejderi", "tip": "elit", "can": 66, "guc_artisi": 2,
 				"hamleler": [
@@ -125,7 +133,9 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "kalkan", "ad": "Kemik Muhafızlar", "miktar": 30, "agirlik": 10},
 					{"tur": "guc", "ad": "Karanlık Ayin", "miktar": 4, "agirlik": 10},
 				],
-				"gorunum": {"sekil": "lich", "renk": "#4a3a6a", "goz": "#7affb0", "yaricap": 94.0}}
+				"gorunum": {"sekil": "lich", "renk": "#4a3a6a", "goz": "#7affb0", "yaricap": 94.0,
+					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Mage.glb",
+						"olcek": 1.22, "saldiri": "Spellcast_Shoot", "bekleme": "Idle_Combat"}}}
 		_:
 			return {"id": BOSS, "ad": "Kızıl Ejder", "tip": "boss", "can": 85, "guc_artisi": 3,
 				"hamleler": [

@@ -12,3 +12,5 @@ Oyun: Boğaç
 Oyun motoru: Godot Engine (MIT lisansı, godotengine.org)
 
 Arayüz çerçeveleri: Kenney - Fantasy UI Borders (CC0, www.kenney.nl)
+
+3D modeller: KayKit - Character Pack: Skeletons, Kay Lousberg (CC0, www.kaylousberg.com)

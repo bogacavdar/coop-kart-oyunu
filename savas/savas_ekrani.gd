@@ -483,6 +483,7 @@ func _olay_oynat(olay: Dictionary) -> void:
 			_log_yaz("[b]Tur %d[/b] başladı." % motor.tur)
 		"zafer":
 			_log_yaz("[color=#5aff8a][b]%s yenildi![/b][/color]" % motor.boss.ad)
+			_boss.ol()
 			Ses.cal(self, "zafer", 0.0)
 			await _sonuc_goster(true)
 		"yenilgi":

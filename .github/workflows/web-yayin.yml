@@ -91,9 +91,39 @@ jobs:
           HTML
           ls -la build/web/indir
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: build/web
+          retention-days: 3
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
+
+  ekran:
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: web
+      - name: Ekran görüntüleri
+        run: |
+          (cd web && python3 -m http.server 8000 >/dev/null 2>&1 &)
+          cd testler/ekran
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --no-save playwright@1.49.0 >/dev/null 2>&1
+          sleep 2
+          node ekran.js ana savas:tas_golem savas:iskelet_lejyonu savas:hayalet savas:lich_kral savas:kara_sovalye
+          mkdir -p ../../ekranlar && mv ekran_*.png ../../ekranlar/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ekranlar
+          path: ekranlar
+          retention-days: 7
 
   deploy:
     needs: build
