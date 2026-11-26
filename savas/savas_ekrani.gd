@@ -104,7 +104,7 @@ func _arayuzu_kur() -> void:
 	_niyet_kutu.mouse_filter = Control.MOUSE_FILTER_STOP
 	Ipucu.baglan(_niyet_kutu, _niyet_ipucu)
 	var niyet_stili := _kutu_stili(Color(0.1, 0.05, 0.02, 0.85), Color("#ffb347"))
-	niyet_stili.set_content_margin_all(18)
+	niyet_stili.set_content_margin_all(24)
 	_niyet_kutu.add_theme_stylebox_override("panel", niyet_stili)
 	add_child(_niyet_kutu)
 	Arayuz.susle(_niyet_kutu, Color("#ffb347"), Arayuz.PANEL_CERCEVESI, -6.0)
@@ -135,7 +135,7 @@ func _arayuzu_kur() -> void:
 	log_panel.position = Vector2(14, 585)
 	log_panel.size = Vector2(250, 122)
 	var log_stili := _kutu_stili(Color(0.05, 0.04, 0.1, 0.8), Color("#3a3360"))
-	log_stili.set_content_margin_all(16)
+	log_stili.set_content_margin_all(24)
 	log_panel.add_theme_stylebox_override("panel", log_stili)
 	add_child(log_panel)
 	Arayuz.susle(log_panel, Color("#8a7fd0"), Arayuz.PANEL_CERCEVESI, -6.0)
@@ -165,7 +165,7 @@ func _arayuzu_kur() -> void:
 	_hedef_bandi = PanelContainer.new()
 	_hedef_bandi.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bant_stili := _kutu_stili(Color(0.02, 0.12, 0.06, 0.92), Color("#7dffa0"))
-	bant_stili.set_content_margin_all(18)
+	bant_stili.set_content_margin_all(24)
 	_hedef_bandi.add_theme_stylebox_override("panel", bant_stili)
 	_hedef_bandi.z_index = 60
 	_hedef_bandi.visible = false
