@@ -113,8 +113,8 @@ static func tanim(id: String) -> Dictionary:
 			return {"id": id, "ad": "Kara Şövalye", "tip": "elit", "can": 75, "guc_artisi": 2,
 				"hamleler": [
 					{"tur": "kalkan", "ad": "Kara Kalkan", "miktar": 35, "agirlik": 25},
-					{"tur": "tekil", "ad": "Ölüm Kılıcı", "hasar": 55, "agirlik": 30, "ilk_tur_yok": true},
-					{"tur": "cift", "ad": "Çifte Darbe", "hasar": 30, "agirlik": 30},
+					{"tur": "tekil", "ad": "Ölüm Kılıcı", "hasar": 48, "agirlik": 30, "ilk_tur_yok": true},
+					{"tur": "cift", "ad": "Çifte Darbe", "hasar": 27, "agirlik": 30},
 					{"tur": "guc", "ad": "Karanlık Yemin", "miktar": 4, "agirlik": 15},
 				],
 				"gorunum": {"sekil": "kara_sovalye", "renk": "#5a5a6e", "goz": "#ff3a3a", "yaricap": 84.0,
@@ -134,7 +134,7 @@ static func tanim(id: String) -> Dictionary:
 				"hamleler": [
 					{"tur": "tekil", "ad": "Ölüm Parmağı", "hasar": 34, "agirlik": 30},
 					{"tur": "emme", "ad": "Ruh Hasadı", "hasar": 28, "agirlik": 25},
-					{"tur": "alan", "ad": "Kara Dalga", "hasar": 19, "agirlik": 25},
+					{"tur": "alan", "ad": "Kara Dalga", "hasar": 21, "agirlik": 25},
 					{"tur": "kalkan", "ad": "Kemik Muhafızlar", "miktar": 30, "agirlik": 10},
 					{"tur": "guc", "ad": "Karanlık Ayin", "miktar": 4, "agirlik": 10},
 				],
