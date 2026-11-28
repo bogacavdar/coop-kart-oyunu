@@ -17,7 +17,7 @@ const SOZLUK := {
 	"sonraki_mana": "[color=#8fc1ff]Gelecek tur mana[/color]: Bir sonraki tur manana eklenir; 6 sınırını da aşabilir.",
 	"yardakci": "[color=#ffb347]Yardakçı[/color]: Bossun çağırdığı küçük düşman. Önde siper olur: tek hedefli vuruşlar önce ona gider, fazlası boşa gider. Her tur birine vurur.",
 	"alan": "[color=#ff8a5a]Alan hasarı[/color]: Bütün yardakçılara ve bossa ayrı ayrı vurur. Yardakçı sürüsüne karşı en iyi silah.",
-	"guc": "[color=#ffb347]Güç[/color]: Savaş bitene kadar oynadığın her vuruşa eklenir.",
+	"oyuncu_guc": "[color=#ffb347]Güç (senin)[/color]: Savaş bitene kadar oynadığın her vuruşa eklenir.",
 	"diken": "[color=#ffb347]Diken[/color]: Bu tur sana vuran her düşman (boss ya da yardakçı) diken kadar hasar alır.",
 	"tekrar": "[color=#ff8a5a]Çoklu vuruş[/color]: Her vuruş işaretten ayrı ayrı faydalanır; öndeki yardakçı ölürse kalan vuruşlar sıradakine gider.",
 	"kart": "[color=#8fc1ff]Kart çekme[/color]: Gelecek tur elin o kadar fazla kartla dolar (en fazla 7).",
@@ -113,7 +113,8 @@ static func kart_metni(k: CardData) -> String:
 		CardData.Etki.HASAR: terimler.append("kalkan")
 		CardData.Etki.ZEHIR, CardData.Etki.ZEHIR_PATLAT: terimler.append("zehir")
 		CardData.Etki.ALAN_HASAR: terimler.append_array(["alan", "yardakci"])
-		CardData.Etki.GUC: terimler.append("guc")
+		CardData.Etki.GUC: terimler.append("oyuncu_guc")
+		CardData.Etki.GUC_KIR: terimler.append("guc")
 		CardData.Etki.DIKEN: terimler.append("diken")
 		CardData.Etki.KART_CEK: terimler.append("kart")
 		CardData.Etki.KALKAN_KIR: terimler.append("kalkan")
@@ -124,7 +125,7 @@ static func kart_metni(k: CardData) -> String:
 		CardData.EkEtki.ZAYIFLAT: "zayif", CardData.EkEtki.SONRAKI_MANA: "sonraki_mana",
 		CardData.EkEtki.TAKIMA_MANA: "sonraki_mana"}
 	ek_terim[CardData.EkEtki.KART_CEK] = "kart"
-	ek_terim[CardData.EkEtki.GUC] = "guc"
+	ek_terim[CardData.EkEtki.GUC] = "oyuncu_guc"
 	if k.tekrar > 1:
 		terimler.append("tekrar")
 	if ek_terim.has(k.ek_etki) and not terimler.has(ek_terim[k.ek_etki]):
