@@ -175,7 +175,8 @@ func turu_coz() -> Array[Dictionary]:
 	for o in oyuncular:
 		for s in o.secimler:
 			o.el.erase(s["kart"])
-			o.atilan.append(s["kart"])
+			if not (s["kart"] as CardData).tek_kullanim:
+				o.atilan.append(s["kart"])
 		o.secimler.clear()
 
 	if boss.can <= 0:

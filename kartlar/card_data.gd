@@ -50,6 +50,8 @@ enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HAS
 ## İkinci etki ve değeri. Açıklamada {ek} yazarsan ek değerle değişir.
 @export var ek_etki: EkEtki = EkEtki.YOK
 @export var ek_deger: int = 0
+## Savaşta bir kez: oynanınca o savaş boyunca desteye dönmez
+@export var tek_kullanim := false
 ## Başlangıç destesinde mi? (değilse ödül olarak çıkar)
 @export var baslangic := false
 ## Ödül olarak en erken hangi bölümde çıkar
@@ -69,7 +71,8 @@ func resim() -> Texture2D:
 
 
 func aciklama_metni() -> String:
-	return aciklama.format({"deger": deger, "ek": ek_deger, "tekrar": tekrar})
+	var metin := aciklama.format({"deger": deger, "ek": ek_deger, "tekrar": tekrar})
+	return metin + (" Savaşta bir kez." if tek_kullanim else "")
 
 
 func guclendirildi_mi() -> bool:
