@@ -89,7 +89,7 @@ jobs:
           <a href="../">Tarayıcıda oyna</a>
           <a href="EjderinIni-Windows.zip">Windows (.zip)</a>
           <a href="EjderinIni.apk">Android (.apk)</a>
-          <small>Windows: zip'i aç, EjderinIni.exe'yi çalıştır. Android: APK'yı indirip yükle (bilinmeyen kaynaklara izin vermen gerekebilir).</small>
+          <small>Windows: zip'i bir klasöre çıkar, EjderinIni.exe'yi çalıştır (EjderinIni.pck aynı klasörde durmalı). İmzasız oyun olduğu için Windows "Bilinmeyen yayımcı" uyarısı verebilir: Ek bilgi &gt; Yine de çalıştır. Android: APK'yı indirip yükle (bilinmeyen kaynaklara izin vermen gerekebilir).</small>
           </body></html>
           HTML
           ls -la build/web/indir
