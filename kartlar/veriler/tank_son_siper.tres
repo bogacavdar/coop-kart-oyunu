@@ -6,11 +6,13 @@
 script = ExtResource("1_card")
 id = &"tank_son_siper"
 kart_adi = "Son Siper"
-aciklama = "Düşmanın dikkatini çekersin ve {deger} zırh kazanırsın."
-mana = 5
+aciklama = "Düşmanın dikkatini çekersin, {deger} zırh kazanırsın; takıma {ek} zırh."
+mana = 4
 sinif = 0
 tip = 0
 hedef = 2
 etki = 3
-deger = 26
+deger = 22
 bolum = 2
+ek_etki = 2
+ek_deger = 4
