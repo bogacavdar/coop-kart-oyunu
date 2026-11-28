@@ -20,3 +20,7 @@ Kasım 2026 kart eklemesi (32 kart):
 delapouite: heart-beats, heart-shield
 lorc: shield-echoes, lightning-shout, battle-gear, bleeding-wound, hammer-drop, heart-tower, sword-spin, aura, burning-passion, heart-drop, scales, holy-grail, meditation, winged-shield, death-zone, crystal-ball, skull-crossed-bones, lightning-arc, radioactive, ice-shield, meteor-impact, snake-bite, poison-bottle, target-arrows, double-shot, wolf-trap, hood, lightning-bow, hawk-emblem
 sbed: acid
+
+Kasım 2026 çeşitlendirme (yeni ve değişen kartlar):
+delapouite: enrage
+lorc: cracked-shield, spiked-armor, angel-wings, fire-ring, arrow-cluster, striking-arrows, spinning-sword, guillotine, open-book, sun-radiations, bleeding-heart, drop, skull-bolt, magic-swirl, semi-closed-eye, broken-bone

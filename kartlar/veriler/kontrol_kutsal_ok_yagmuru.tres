@@ -5,14 +5,15 @@
 [resource]
 script = ExtResource("1_card")
 id = &"kontrol_kutsal_ok_yagmuru"
-kart_adi = "Buzlu Ok Yağmuru"
-aciklama = "Düşmana {deger} hasar, ardından {ek} hasar daha verir."
+kart_adi = "Ok Seli"
+aciklama = "{tekrar} ok atar, her biri {deger} hasar."
 mana = 4
 sinif = 3
 tip = 2
 hedef = 0
 etki = 0
-deger = 17
-ek_etki = 5
-ek_deger = 5
+deger = 4
+ek_etki = 0
+ek_deger = 0
 bolum = 2
+tekrar = 4

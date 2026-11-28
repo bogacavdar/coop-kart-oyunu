@@ -11,6 +11,12 @@ var zirh := 0
 var mana := 0
 ## Gelecek tur fazladan gelecek mana (kartlardan)
 var sonraki_mana := 0
+## Gelecek tur fazladan çekilecek kart
+var sonraki_kart := 0
+## Savaş boyunca bütün vuruşlarına eklenir
+var guc := 0
+## Bu tur ona vuran düşman bu kadar hasar alır
+var diken := 0
 var deste: Array[CardData] = []
 var el: Array[CardData] = []
 var atilan: Array[CardData] = []

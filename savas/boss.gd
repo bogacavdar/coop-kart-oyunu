@@ -44,6 +44,8 @@ func durum_metni() -> String:
 		parcalar.append("Kalkan %d" % zirh)
 	if guc > 0:
 		parcalar.append("Güç +%d" % guc)
+	elif guc < 0:
+		parcalar.append("Güç %d" % guc)
 	if isaret > 0:
 		parcalar.append("İşaretli +%d" % isaret)
 	if zayiflik > 0:

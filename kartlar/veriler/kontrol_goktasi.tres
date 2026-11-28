@@ -6,12 +6,12 @@
 script = ExtResource("1_card")
 id = &"kontrol_goktasi"
 kart_adi = "Ok Yağmuru"
-aciklama = "Düşmana {deger} hasar verir."
+aciklama = "Bütün düşmanlara {deger} hasar verir."
 mana = 3
 sinif = 3
 tip = 2
 hedef = 0
-etki = 0
-deger = 13
+etki = 9
+deger = 6
 ek_etki = 0
 ek_deger = 0

@@ -6,12 +6,13 @@
 script = ExtResource("1_card")
 id = &"kontrol_cift_atis"
 kart_adi = "Çift Atış"
-aciklama = "{deger} hasar verir, sonra {ek} hasar daha."
+aciklama = "{tekrar} ok atar, her biri {deger} hasar."
 mana = 2
 sinif = 3
 tip = 2
 hedef = 0
 etki = 0
 deger = 5
-ek_etki = 5
-ek_deger = 5
+ek_etki = 0
+ek_deger = 0
+tekrar = 2

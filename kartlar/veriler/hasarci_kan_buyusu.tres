@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"hasarci_kan_buyusu"
+kart_adi = "Kan Büyüsü"
+aciklama = "{deger} can kaybedersin, gelecek tur +{ek} mana."
+mana = 0
+sinif = 2
+tip = 0
+hedef = 2
+etki = 17
+deger = 6
+ek_etki = 7
+ek_deger = 2

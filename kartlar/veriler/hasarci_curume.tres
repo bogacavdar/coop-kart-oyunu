@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"hasarci_curume"
+kart_adi = "Çürüme"
+aciklama = "Düşmandaki zehrin {deger} katı hasar verir; zehir biter."
+mana = 2
+sinif = 2
+tip = 2
+hedef = 0
+etki = 14
+deger = 2

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"destek_kefaret"
+kart_adi = "Kefaret"
+aciklama = "{deger} can kaybedersin, takıma {ek} can."
+mana = 0
+sinif = 1
+tip = 3
+hedef = 2
+etki = 17
+deger = 6
+ek_etki = 4
+ek_deger = 4

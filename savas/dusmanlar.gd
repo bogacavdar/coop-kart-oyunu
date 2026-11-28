@@ -30,6 +30,29 @@ static func boss_id(bolum: int) -> String:
 	return BOSS_2 if bolum >= 2 else BOSS
 
 
+## Yardakçılar: bossun çağırdığı küçük düşmanlar. Can ve hasar 4 kişilik takım içindir.
+static func yardakci(id: String) -> Dictionary:
+	match id:
+		"goblin":
+			return {"ad": "Goblin", "can": 14, "hasar": 5,
+				"gorunum": {"dosya": "res://varliklar/modeller/kaykit/Rogue_Hooded.glb", "renk": "#9ccf6e", "saldiri": "Dualwield_Melee_Attack_Stab"}}
+		"bataklik_ruhu":
+			return {"ad": "Bataklık Ruhu", "can": 16, "hasar": 6,
+				"gorunum": {"dosya": "res://varliklar/modeller/quaternius/Flying/Ghost_Skull.gltf", "renk": "#9dff8a", "saydam": 0.8, "saldiri": "Headbutt", "vurulma": "HitReact", "olum": "Death", "bekleme": "Flying_Idle"}}
+		"ork_askeri":
+			return {"ad": "Ork Askeri", "can": 22, "hasar": 7,
+				"gorunum": {"dosya": "res://varliklar/modeller/kaykit/Barbarian.glb", "renk": "#7fb060", "saldiri": "1H_Melee_Attack_Chop"}}
+		"iskelet":
+			return {"ad": "İskelet", "can": 14, "hasar": 5,
+				"gorunum": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Minion.glb", "saldiri": "Unarmed_Melee_Attack_Punch_A"}}
+		"kemik_muhafiz":
+			return {"ad": "Kemik Muhafız", "can": 24, "hasar": 7,
+				"gorunum": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Rogue.glb", "renk": "#b8a8e0", "saldiri": "1H_Melee_Attack_Stab"}}
+		_:
+			return {"ad": "Ejder Yavrusu", "can": 22, "hasar": 7,
+				"gorunum": {"dosya": "res://varliklar/modeller/quaternius/Flying/Dragon.gltf", "renk": "#ff9a7a", "saldiri": "Headbutt", "vurulma": "HitReact", "olum": "Death", "bekleme": "Flying_Idle"}}
+
+
 static func tanim(id: String) -> Dictionary:
 	match id:
 		"tas_golem":
@@ -46,7 +69,8 @@ static func tanim(id: String) -> Dictionary:
 				"hamleler": [
 					{"tur": "tekil", "ad": "Paslı Hançer", "hasar": 28, "agirlik": 40},
 					{"tur": "cift", "ad": "Goblin Akını", "hasar": 20, "agirlik": 40},
-					{"tur": "guc", "ad": "Savaş Davulu", "miktar": 3, "agirlik": 20},
+					{"tur": "guc", "ad": "Savaş Davulu", "miktar": 3, "agirlik": 15},
+					{"tur": "cagir", "ad": "Yardım Çağrısı", "yardakci": "goblin", "adet": 2, "agirlik": 25},
 				],
 				"gorunum": {"sekil": "goblin", "renk": "#56762e", "goz": "#ffd84a", "yaricap": 66.0,
 					"model": {"dosya": "res://varliklar/modeller/kaykit/Rogue_Hooded.glb", "renk": "#9ccf6e", "olcek": 0.85, "saldiri": "Dualwield_Melee_Attack_Stab"}}}
@@ -65,7 +89,8 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "alan", "ad": "Zehirli Bulut", "hasar": 18, "agirlik": 35},
 					{"tur": "tekil", "ad": "Lanet", "hasar": 38, "agirlik": 30},
 					{"tur": "iyiles", "ad": "Kara İksir", "miktar": 32, "agirlik": 15},
-					{"tur": "guc", "ad": "Kara Ayin", "miktar": 4, "agirlik": 20},
+					{"tur": "guc", "ad": "Kara Ayin", "miktar": 4, "agirlik": 10},
+					{"tur": "cagir", "ad": "Bataklık Ruhları", "yardakci": "bataklik_ruhu", "adet": 2, "agirlik": 20},
 				],
 				"gorunum": {"sekil": "cadi", "renk": "#33234a", "goz": "#9dff6a", "yaricap": 80.0,
 					"model": {"dosya": "res://varliklar/modeller/kaykit/Mage.glb", "renk": "#8fc488", "saldiri": "Spellcast_Shoot", "bekleme": "Idle"}}}
@@ -76,6 +101,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "tekil", "ad": "Balta Darbesi", "hasar": 45, "agirlik": 30, "ilk_tur_yok": true},
 					{"tur": "alan", "ad": "Savaş Narası", "hasar": 17, "agirlik": 30},
 					{"tur": "cift", "ad": "Çifte Balta", "hasar": 23, "agirlik": 15},
+					{"tur": "cagir", "ad": "Savaş Borusu", "yardakci": "ork_askeri", "adet": 2, "agirlik": 20},
 				],
 				"gorunum": {"sekil": "ork", "renk": "#4e5e2a", "goz": "#ff4a3a", "yaricap": 82.0,
 					"model": {"dosya": "res://varliklar/modeller/kaykit/Barbarian.glb", "renk": "#7fb060", "olcek": 1.18, "saldiri": "2H_Melee_Attack_Chop"}}}
@@ -85,7 +111,8 @@ static func tanim(id: String) -> Dictionary:
 				"hamleler": [
 					{"tur": "cift", "ad": "Kılıç Yağmuru", "hasar": 26, "agirlik": 40},
 					{"tur": "alan", "ad": "Kemik Fırtınası", "hasar": 15, "agirlik": 35},
-					{"tur": "kalkan", "ad": "Kalkan Duvarı", "miktar": 20, "agirlik": 25},
+					{"tur": "kalkan", "ad": "Kalkan Duvarı", "miktar": 20, "agirlik": 15},
+					{"tur": "cagir", "ad": "Ölüleri Kaldır", "yardakci": "iskelet", "adet": 2, "agirlik": 25},
 				],
 				"gorunum": {"sekil": "iskelet", "renk": "#cfc6aa", "goz": "#7affd0", "yaricap": 80.0,
 					"model": {"dosya": "res://varliklar/modeller/kaykit/Skeleton_Warrior.glb",
@@ -135,7 +162,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "tekil", "ad": "Ölüm Parmağı", "hasar": 34, "agirlik": 30},
 					{"tur": "emme", "ad": "Ruh Hasadı", "hasar": 28, "agirlik": 25},
 					{"tur": "alan", "ad": "Kara Dalga", "hasar": 21, "agirlik": 25},
-					{"tur": "kalkan", "ad": "Kemik Muhafızlar", "miktar": 30, "agirlik": 10},
+					{"tur": "cagir", "ad": "Kemik Muhafızlar", "yardakci": "kemik_muhafiz", "adet": 2, "agirlik": 20},
 					{"tur": "guc", "ad": "Karanlık Ayin", "miktar": 4, "agirlik": 10},
 				],
 				"gorunum": {"sekil": "lich", "renk": "#4a3a6a", "goz": "#7affb0", "yaricap": 94.0,
@@ -148,6 +175,7 @@ static func tanim(id: String) -> Dictionary:
 					{"tur": "tekil", "ad": "Ölümcül Isırık", "hasar": 40, "agirlik": 20, "ilk_tur_yok": true},
 					{"tur": "alan", "ad": "Ejder Nefesi", "hasar": 15, "agirlik": 25},
 					{"tur": "guc", "ad": "Öfkeleniyor", "miktar": 3, "agirlik": 10},
+					{"tur": "cagir", "ad": "Yavruları Çağır", "yardakci": "ejder_yavrusu", "adet": 2, "agirlik": 20, "ilk_tur_yok": true},
 				],
 				"gorunum": {"sekil": "ejder", "renk": "#7a1c14", "goz": "#ffd040", "yaricap": 92.0,
 					"model": {"dosya": "res://varliklar/modeller/quaternius/Flying/Dragon_Evolved.gltf", "saldiri": "Punch", "vurulma": "HitReact", "olum": "Death", "bekleme": "Flying_Idle", "renk": "#ff8a7a"}}}

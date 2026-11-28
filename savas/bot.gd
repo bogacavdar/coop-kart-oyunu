@@ -45,15 +45,78 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 		niyet_hedefleri = canlilar.map(func(c): return c.no)
 	var etkilenen := niyet_hedefleri.size()
 
+	var vurus := kart.deger + o.guc + motor.boss.isaret
+	var yardakci_sayisi := motor.yardakcilar.size()
 	match kart.etki:
 		CardData.Etki.HASAR:
-			return [float(kart.deger), -1]
+			return [float(vurus * maxi(1, kart.tekrar)), -1]
+
+		CardData.Etki.ALAN_HASAR:
+			var toplam := float(vurus)
+			for y in motor.yardakcilar:
+				# Yardakçı öldürmek onun vuruşlarını da keser
+				toplam += mini(vurus, y.can) * (1.6 if vurus >= y.can else 1.0)
+			return [toplam, -1]
+
+		CardData.Etki.INFAZ:
+			var on_can := motor.boss.can
+			var on_max := motor.boss.max_can
+			if yardakci_sayisi > 0:
+				on_can = motor.yardakcilar[0].can
+				on_max = motor.yardakcilar[0].max_can
+			return [float(vurus * (3 if on_can * 10 <= on_max * 3 else 1)), -1]
+
+		CardData.Etki.KALKAN_KIR:
+			return [float(vurus + motor.boss.zirh), -1]
+
+		CardData.Etki.ZEHIR_PATLAT:
+			var z := motor.boss.zehir
+			# Az zehri patlatmak, zehrin kendi kendine vereceği hasarı kaybettirir
+			return [maxf(0.0, z * kart.deger - z * minf(z, 4.0) * 0.45), -1]
+
+		CardData.Etki.GUC_KIR:
+			return [kart.deger * 4.0, -1]
+
+		CardData.Etki.GUC:
+			return [kart.deger * 3.0, -1]
+
+		CardData.Etki.DIKEN:
+			var vurulma := 0.0
+			if niyet_hedefleri.has(o.no) or (niyet_tur == "tekil" and motor.aggro == o.no):
+				vurulma += 1.0
+			vurulma += yardakci_sayisi * (0.9 if _aggro_bende(motor, o) else 0.25)
+			return [kart.deger * vurulma, -1]
+
+		CardData.Etki.KAN:
+			if o.can <= kart.deger + 12:
+				return [-100.0, -1]
+			return [-kart.deger * 0.7, -1]
+
+		CardData.Etki.KART_CEK:
+			var hedef_param := -1
+			if kart.hedef == CardData.Hedef.MUTTEFIK:
+				# En çok manası olacak (en kalabalık eli olmayan) müttefik
+				var en_iyi: Oyuncu = null
+				for c in canlilar:
+					if c != o and (en_iyi == null or c.el.size() < en_iyi.el.size()):
+						en_iyi = c
+				if en_iyi == null:
+					return [0.0, -1]
+				hedef_param = en_iyi.no
+			return [kart.deger * 3.0, hedef_param]
+
+		CardData.Etki.DIRILT:
+			var olu := 0
+			for c in motor.oyuncular:
+				if not c.hayatta():
+					olu += 1
+			return [olu * kart.deger * 2.0, -1]
 
 		CardData.Etki.ZEHIR:
 			return [_zehir_degeri(motor, kart.deger), -1]
 
 		CardData.Etki.ZIRH_HASARI:
-			return [float(_beklenen_zirh(motor, o) + kart.deger), -1]
+			return [float(_beklenen_zirh(motor, o) + vurus), -1]
 
 		CardData.Etki.ISARET:
 			# Takımda genelde 2-3 saldırı kartı oynanır
@@ -68,6 +131,11 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 			return [float(niyet_hasar * etkilenen) * 0.8, -1]
 
 		CardData.Etki.AGGRO:
+			if yardakci_sayisi > 0:
+				var y_hasar := 0
+				for y in motor.yardakcilar:
+					y_hasar += y.hasar
+				return [kart.deger + y_hasar * 0.3 + (niyet_hasar * 0.4 if niyet_tur == "tekil" else 0.0), -1]
 			if niyet_tur == "tekil" and niyet_hedef >= 0 and niyet_hedef != o.no:
 				var tehlikede := motor.oyuncular[niyet_hedef].can <= niyet_hasar
 				return [kart.deger + niyet_hasar * (0.8 if tehlikede else 0.4), -1]
@@ -130,7 +198,21 @@ static func _ek_puan(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> float:
 			return ek * 4.0
 		CardData.EkEtki.TAKIMA_MANA:
 			return ek * 3.5 * motor.canli_oyuncular().size()
+		CardData.EkEtki.KART_CEK:
+			return ek * 3.0
+		CardData.EkEtki.GUC:
+			return ek * 3.0
 	return 0.0
+
+
+## Bu tur seçilmiş bir Meydan Okuma/aggro kartı var mı ya da aggro bende mi
+static func _aggro_bende(motor: SavasMotoru, o: Oyuncu) -> bool:
+	if motor.aggro == o.no:
+		return true
+	for s in o.secimler:
+		if (s["kart"] as CardData).etki == CardData.Etki.AGGRO:
+			return true
+	return false
 
 
 ## Eklenen zehrin savaş boyunca kabaca vereceği toplam hasar

@@ -12,6 +12,8 @@ const BOSS_MERKEZI := Vector2(640, 292)
 const KOLTUK_MERKEZLERI: Array[Vector2] = [
 	Vector2(498, 520), Vector2(150, 285), Vector2(640, 54), Vector2(1130, 285),
 ]
+## Yardakçıların duracağı yerler (bossun iki yanı ve sol üstü)
+const YARDAKCI_YERLERI: Array[Vector2] = [Vector2(415, 318), Vector2(865, 336), Vector2(415, 168)]
 const EL_Y := 668.0
 const EL_ARALIK := 132.0
 const EL_OLCEK := 0.72
@@ -37,6 +39,9 @@ var _el_katmani: Control
 var _efekt_katmani: Control
 var _hedef_bandi: PanelContainer
 var _hedef_yazisi: Label
+## yardakçı no -> görünüm; yer indeksi -> yardakçı no
+var _yardakci_gorunumleri: Dictionary = {}
+var _yardakci_yerleri: Array = [-1, -1, -1]
 
 
 func _ready() -> void:
@@ -282,6 +287,12 @@ func _hepsini_guncelle() -> void:
 	_boss_can.text = "Can: %d / %d" % [b.can, b.max_can]
 	_boss_durum.text = b.durum_metni()
 	_niyet.text = "Sonraki hamle:\n" + str(b.niyet.get("metin", ""))
+	if not motor.yardakcilar.is_empty():
+		var toplam := 0
+		for y in motor.yardakcilar:
+			toplam += y.hasar
+		_niyet.text += "\nYardakçılar: %d kişi, toplam %d hasar" % [motor.yardakcilar.size(), toplam]
+	_on_guncelle()
 	_niyet_kutu.visible = not motor.bitti
 	_tur_label.text = "Tur %d" % motor.tur
 	for o in motor.oyuncular:
@@ -292,11 +303,23 @@ func _hepsini_guncelle() -> void:
 	_buton.disabled = oynatiliyor or motor.bitti
 
 
+## En öndeki yardakçının üstünde "SİPER" yazar
+func _on_guncelle() -> void:
+	var on_no := motor.yardakcilar[0].no if not motor.yardakcilar.is_empty() else -1
+	for no in _yardakci_gorunumleri:
+		var g: YardakciGorunumu = _yardakci_gorunumleri[no]
+		if is_instance_valid(g):
+			g.on_mu(no == on_no)
+
+
 func _hedef_bandi_guncelle() -> void:
 	_hedef_bandi.visible = hedef_bekleyen != null and not oynatiliyor
 	if not _hedef_bandi.visible:
 		return
-	var ne := "zırh" if hedef_bekleyen.etki == CardData.Etki.ZIRH else "can"
+	var ne := "can"
+	match hedef_bekleyen.etki:
+		CardData.Etki.ZIRH: ne = "zırh"
+		CardData.Etki.KART_CEK: ne = "kart"
 	_hedef_yazisi.text = "%s: kime %s vereceksin?\nYeşil parlayan bir koltuğa tıkla  (iptal: sağ tık)" % [hedef_bekleyen.kart_adi, ne]
 	_hedef_bandi.reset_size()
 	_hedef_bandi.position = Vector2(640, 182) - _hedef_bandi.size / 2.0
@@ -333,7 +356,8 @@ func _el_guncelle() -> void:
 		if not o.secili_mi(kart) and kart.mana > o.kalan_mana():
 			v.modulate = Color(0.55, 0.55, 0.6)
 		var kayma := i - (n - 1) / 2.0
-		var merkez := Vector2(640 + kayma * EL_ARALIK, EL_Y + kayma * kayma * 6 - (34.0 if secili else 0.0))
+		var aralik := EL_ARALIK if n <= 5 else 540.0 / (n - 1)
+		var merkez := Vector2(640 + kayma * aralik, EL_Y + kayma * kayma * (6.0 if n <= 5 else 3.0) - (34.0 if secili else 0.0))
 		v.temel_z = i
 		v.z_index = i
 		v.card_clicked.connect(_on_kart_tiklandi)
@@ -475,7 +499,10 @@ func _olay_oynat(olay: Dictionary) -> void:
 			Ses.cal(self, "kukreme", -2.0)
 			await _bekle(0.5)
 		"oyuncu_hasar":
-			await _mermi(BOSS_MERKEZI, k.portre_merkezi())
+			var kaynak := BOSS_MERKEZI
+			if olay.has("kaynak") and _yardakci_gorunumleri.has(olay["kaynak"]) and is_instance_valid(_yardakci_gorunumleri[olay["kaynak"]]):
+				kaynak = _yardakci_gorunumleri[olay["kaynak"]].merkez()
+			await _mermi(kaynak, k.portre_merkezi())
 			Ses.cal(self, "darbe")
 			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
 			k.parlat()
@@ -487,11 +514,75 @@ func _olay_oynat(olay: Dictionary) -> void:
 			_log_yaz("[color=#ff5a5a]%s[/color]" % olay["metin"])
 			k.dus()
 			await _bekle(0.4)
+		"yardakci_geldi":
+			var yer := _yardakci_yerleri.find(-1)
+			if yer < 0:
+				yer = 0
+			_yardakci_yerleri[yer] = olay["no"]
+			var hasar := 0
+			for y in motor.yardakcilar:
+				if y.no == olay["no"]:
+					hasar = y.hasar
+			var g := YardakciGorunumu.new(olay["no"], olay["ad"], olay["can"], olay["max_can"], olay["gorunum"], hasar)
+			add_child(g)
+			move_child(g, _boss.get_index() + 1)
+			g.merkeze_yerlestir(YARDAKCI_YERLERI[yer])
+			_yardakci_gorunumleri[olay["no"]] = g
+			g.belir()
+			_on_guncelle()
+			Ses.cal(self, "buyu", -4.0, 0.8)
+			_log_yaz("[color=#ffb347]%s geldi[/color]" % olay["ad"])
+			await _bekle(0.35)
+		"yardakci_hasar":
+			var g: YardakciGorunumu = _yardakci_gorunumleri.get(olay["no"])
+			if g and is_instance_valid(g):
+				g.guncelle(olay["can"], olay["max_can"])
+				g.vur()
+				_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), g.merkez(), 26)
+			Ses.cal(self, "vurus", -3.0, 1.2)
+			await _bekle(0.3)
+		"yardakci_oldu":
+			var g: YardakciGorunumu = _yardakci_gorunumleri.get(olay["no"])
+			if g and is_instance_valid(g):
+				g.ol()
+			_yardakci_gorunumleri.erase(olay["no"])
+			var yer := _yardakci_yerleri.find(olay["no"])
+			if yer >= 0:
+				_yardakci_yerleri[yer] = -1
+			_log_yaz("[color=#5aff8a]%s[/color]" % olay["metin"])
+			_on_guncelle()
+			await _bekle(0.3)
+		"yardakci_saldiri":
+			var g: YardakciGorunumu = _yardakci_gorunumleri.get(olay["no"])
+			if g and is_instance_valid(g):
+				g.saldir()
+			_log_yaz("[color=#ffb347]%s[/color]" % olay["metin"])
+			await _bekle(0.2)
+		"kan":
+			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			Ses.cal(self, "darbe", -6.0, 0.8)
+			_ucan_yazi("-%d can" % olay["miktar"], Color("#ff4a6a"), k.portre_merkezi(), 22)
+			await _bekle(0.3)
+		"dirilis":
+			k.modulate = Color.WHITE
+			k.degerleri_goster(olay["can"], olay["max_can"], olay["zirh"])
+			k.parlat()
+			Ses.cal(self, "sifa", 0.0, 1.2)
+			_log_yaz("[color=#5aff8a]%s[/color]" % olay["metin"])
+			_ucan_yazi("Dirildi!", Color("#5aff8a"), k.portre_merkezi(), 26)
+			await _bekle(0.5)
+		"oyuncu_yazi":
+			_ucan_yazi(olay["metin"], Color(olay["renk"]), k.portre_merkezi() + Vector2(0, -40), 18)
+			_log_yaz("%s: %s" % [motor.oyuncular[olay["oyuncu"]].ad, olay["metin"]])
+			await _bekle(0.3)
 		"yeni_tur":
 			_log_yaz("[b]Tur %d[/b] başladı." % motor.tur)
 		"zafer":
 			_log_yaz("[color=#5aff8a][b]%s yenildi![/b][/color]" % motor.boss.ad)
 			_boss.ol()
+			for g in _yardakci_gorunumleri.values():
+				if is_instance_valid(g):
+					g.ol()
 			Ses.cal(self, "zafer", 0.0)
 			await _sonuc_goster(true)
 		"yenilgi":

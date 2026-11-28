@@ -15,12 +15,23 @@ enum Hedef { BOSS, MUTTEFIK, KENDISI, TUM_TAKIM }
 ## (Yeni etkiler hep sona eklenir: .tres dosyaları sayıyla kaydeder.)
 ## ZEHIR: düşmana zehir yükler; her tur sonunda zehir kadar hasar alır, zehir 1 azalır.
 ## ZIRH_HASARI: oynayanın o anki zırhı + deger kadar hasar verir.
-enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET, ZEHIR, ZIRH_HASARI }
+## ALAN_HASAR: bütün düşmanlara (yardakçılar + boss) vurur.
+## DIRILT: düşmüş müttefikleri deger canla geri getirir.
+## KART_CEK: hedef gelecek tur deger kart fazla çeker.
+## GUC: oynayanın bütün vuruşları savaş boyunca +deger.
+## INFAZ: deger hasar; hedefin canı %30'un altındaysa 3 katı.
+## ZEHIR_PATLAT: düşmandaki zehrin deger katı hasar, zehir biter.
+## DIKEN: bu tur oynayana vuran her düşman deger hasar alır.
+## KALKAN_KIR: düşmanın kalkanını yok eder, sonra deger hasar.
+## KAN: oynayan deger can kaybeder (en az 1 canda kalır); bedeli ek etki öder.
+## GUC_KIR: düşmanın gücünü kalıcı olarak deger azaltır.
+enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET, ZEHIR, ZIRH_HASARI,
+	ALAN_HASAR, DIRILT, KART_CEK, GUC, INFAZ, ZEHIR_PATLAT, DIKEN, KALKAN_KIR, KAN, GUC_KIR }
 
 ## Ana etkiden sonra uygulanan ikinci etki (isteğe bağlı)
 ## SONRAKI_MANA / TAKIMA_MANA: gelecek tur fazladan mana (kendine / bütün takıma)
 enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HASAR,
-	ZEHIR, SONRAKI_MANA, TAKIMA_MANA, ISARET, ZAYIFLAT }
+	ZEHIR, SONRAKI_MANA, TAKIMA_MANA, ISARET, ZAYIFLAT, KART_CEK, GUC }
 
 @export var id: StringName
 @export var kart_adi: String = "Yeni Kart"
@@ -33,6 +44,9 @@ enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HAS
 @export var etki: Etki = Etki.HASAR
 ## Hasar, heal, zırh miktarı vb.
 @export var deger: int = 0
+## Hasar kartları kaç kez vurur (her vuruş işaretten ayrı ayrı faydalanır).
+## Açıklamada {tekrar} yazarsan bu sayıyla değişir.
+@export_range(1, 10) var tekrar: int = 1
 ## İkinci etki ve değeri. Açıklamada {ek} yazarsan ek değerle değişir.
 @export var ek_etki: EkEtki = EkEtki.YOK
 @export var ek_deger: int = 0
@@ -55,7 +69,7 @@ func resim() -> Texture2D:
 
 
 func aciklama_metni() -> String:
-	return aciklama.format({"deger": deger, "ek": ek_deger})
+	return aciklama.format({"deger": deger, "ek": ek_deger, "tekrar": tekrar})
 
 
 func guclendirildi_mi() -> bool:
@@ -66,7 +80,9 @@ func guclendirildi_mi() -> bool:
 func guclendirilmis() -> CardData:
 	var k: CardData = duplicate()
 	k.kart_adi = kart_adi + "+"
-	if deger > 0:
+	if deger > 0 and tekrar > 1:
+		k.deger = deger + 1
+	elif deger > 0:
 		k.deger = deger + maxi(2, ceili(deger * 0.35))
 	if ek_deger > 0:
 		k.ek_deger = ek_deger + maxi(1, ceili(ek_deger * 0.35))

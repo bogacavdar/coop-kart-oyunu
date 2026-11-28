@@ -9,9 +9,14 @@ extends RefCounted
 
 const EL_BOYUTU := 4
 const MAKS_MANA := 6
+const MAKS_EL := 7
+const MAKS_YARDAKCI := 3
 
 var oyuncular: Array[Oyuncu] = []
 var boss: Boss
+## Bossun çağırdığı küçük düşmanlar; [0] en öndeki (tek hedefli vuruşları o karşılar)
+var yardakcilar: Array[Yardakci] = []
+var _yardakci_sayac := 0
 var tur := 1
 var bitti := false
 ## Bu tur boss'un tekil saldırılarını üstüne çeken oyuncu (-1 = yok)
@@ -179,6 +184,12 @@ func turu_coz() -> Array[Dictionary]:
 		return olaylar
 
 	_boss_hamlesi(olaylar)
+	_yardakci_saldirilari(olaylar)
+
+	if boss.can <= 0:
+		bitti = true
+		olaylar.append({"tip": "zafer"})
+		return olaylar
 
 	if canli_oyuncular().is_empty():
 		bitti = true
@@ -207,7 +218,80 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 
 	match kart.etki:
 		CardData.Etki.HASAR:
-			_bossa_vur(kart.deger + boss.isaret, olaylar)
+			for i in maxi(1, kart.tekrar):
+				if boss.can <= 0:
+					break
+				_dusmana_vur(kart.deger + o.guc + boss.isaret, olaylar)
+
+		CardData.Etki.ALAN_HASAR:
+			_alana_vur(kart.deger + o.guc + boss.isaret, olaylar)
+
+		CardData.Etki.INFAZ:
+			var miktar := kart.deger + o.guc + boss.isaret
+			var on_can := boss.can
+			var on_max := boss.max_can
+			if not yardakcilar.is_empty():
+				on_can = yardakcilar[0].can
+				on_max = yardakcilar[0].max_can
+			if on_can * 10 <= on_max * 3:
+				miktar *= 3
+				_boss_durum_olayi(olaylar, "İnfaz! Üç kat hasar")
+			_dusmana_vur(miktar, olaylar)
+
+		CardData.Etki.KALKAN_KIR:
+			if boss.zirh > 0:
+				boss.zirh = 0
+				_boss_durum_olayi(olaylar, "%s'in kalkanı parçalandı!" % boss.ad)
+			_dusmana_vur(kart.deger + o.guc + boss.isaret, olaylar)
+
+		CardData.Etki.ZEHIR_PATLAT:
+			if boss.zehir <= 0:
+				_boss_durum_olayi(olaylar, "Patlatacak zehir yok")
+			else:
+				var miktar := mini(boss.zehir * kart.deger, boss.can)
+				boss.zehir = 0
+				boss.can -= miktar
+				olaylar.append({"tip": "boss_hasar", "miktar": miktar, "emilen": 0, "can": boss.can,
+					"durum": boss.durum_metni(), "metin": "Zehir patladı: %d hasar" % miktar})
+
+		CardData.Etki.GUC_KIR:
+			boss.guc -= kart.deger
+			_boss_durum_olayi(olaylar, "%s'in gücü kalıcı olarak %d azaldı" % [boss.ad, kart.deger])
+
+		CardData.Etki.GUC:
+			o.guc += kart.deger
+			_oyuncu_yazisi(olaylar, o, "+%d güç (savaş boyunca)" % kart.deger, "#ffb347")
+
+		CardData.Etki.DIKEN:
+			o.diken += kart.deger
+			_oyuncu_yazisi(olaylar, o, "Diken %d" % o.diken, "#ffb347")
+
+		CardData.Etki.KAN:
+			var kayip := mini(kart.deger, o.can - 1)
+			o.can -= kayip
+			var olay := _oyuncu_durumu(o)
+			olay["tip"] = "kan"
+			olay["miktar"] = kayip
+			olaylar.append(olay)
+
+		CardData.Etki.KART_CEK:
+			for t in _hedefler(o, kart, h["hedef_oyuncu"]):
+				t.sonraki_kart += kart.deger
+				_oyuncu_yazisi(olaylar, t, "Gelecek tur +%d kart" % kart.deger, "#8fc1ff")
+
+		CardData.Etki.DIRILT:
+			var kimse := true
+			for t in oyuncular:
+				if not t.hayatta():
+					kimse = false
+					t.can = mini(kart.deger, t.max_can)
+					t.zirh = 0
+					var olay := _oyuncu_durumu(t)
+					olay["tip"] = "dirilis"
+					olay["metin"] = "%s ayağa kalktı!" % t.ad
+					olaylar.append(olay)
+			if kimse:
+				_oyuncu_yazisi(olaylar, o, "Diriltecek kimse yok", "#c8c8c8")
 
 		CardData.Etki.ISARET:
 			_isaretle(kart.deger, olaylar)
@@ -219,7 +303,7 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 			_zehirle(kart.deger, olaylar)
 
 		CardData.Etki.ZIRH_HASARI:
-			_bossa_vur(o.zirh + kart.deger + boss.isaret, olaylar)
+			_dusmana_vur(o.zirh + kart.deger + o.guc + boss.isaret, olaylar)
 
 		CardData.Etki.SERSEMLET:
 			if boss.bagisik:
@@ -261,7 +345,13 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 			for t in canli_oyuncular():
 				_oyuncu_olayi(olaylar, "iyilestir", t, t.iyiles(ek))
 		CardData.EkEtki.BOSSA_HASAR:
-			_bossa_vur(ek, olaylar)
+			_dusmana_vur(ek, olaylar)
+		CardData.EkEtki.KART_CEK:
+			o.sonraki_kart += ek
+			_oyuncu_yazisi(olaylar, o, "Gelecek tur +%d kart" % ek, "#8fc1ff")
+		CardData.EkEtki.GUC:
+			o.guc += ek
+			_oyuncu_yazisi(olaylar, o, "+%d güç (savaş boyunca)" % ek, "#ffb347")
 		CardData.EkEtki.ZEHIR:
 			_zehirle(ek, olaylar)
 		CardData.EkEtki.ISARET:
@@ -301,6 +391,31 @@ func _zehir_isle(olaylar: Array[Dictionary]) -> void:
 	boss.zehir -= 1
 	olaylar.append({"tip": "boss_hasar", "miktar": miktar, "emilen": 0, "can": boss.can,
 		"durum": boss.durum_metni(), "metin": "Zehir %s'e %d hasar verdi" % [boss.ad, miktar]})
+
+
+## Tek hedefli vuruş: yardakçı varsa en öndekine, yoksa bossa gider.
+## Yardakçıyı öldüren fazla hasar boşa gider.
+func _dusmana_vur(miktar: int, olaylar: Array[Dictionary]) -> void:
+	if yardakcilar.is_empty():
+		_bossa_vur(miktar, olaylar)
+	else:
+		_yardakciya_vur(yardakcilar[0], miktar, olaylar)
+
+
+## Alan vuruşu: bütün yardakçılara ve bossa
+func _alana_vur(miktar: int, olaylar: Array[Dictionary]) -> void:
+	for y in yardakcilar.duplicate():
+		_yardakciya_vur(y, miktar, olaylar)
+	_bossa_vur(miktar, olaylar)
+
+
+func _yardakciya_vur(y: Yardakci, miktar: int, olaylar: Array[Dictionary]) -> void:
+	var net := mini(miktar, y.can)
+	y.can -= net
+	olaylar.append({"tip": "yardakci_hasar", "no": y.no, "miktar": net, "can": y.can, "max_can": y.max_can})
+	if not y.hayatta():
+		yardakcilar.erase(y)
+		olaylar.append({"tip": "yardakci_oldu", "no": y.no, "metin": "%s düştü" % y.ad})
 
 
 ## Boss'a hasar: önce kalkanı emer
@@ -370,20 +485,59 @@ func _boss_hamlesi(olaylar: Array[Dictionary]) -> void:
 			boss.can = mini(boss.max_can, boss.can + int(n["miktar"]))
 			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
 			olaylar.append({"tip": "boss_iyiles", "miktar": boss.can - once, "can": boss.can})
+		"cagir":
+			olaylar.append({"tip": "boss_hamle", "metin": n["metin"]})
+			var tanim := Dusmanlar.yardakci(n["yardakci"])
+			for i in int(n["adet"]):
+				if yardakcilar.size() >= MAKS_YARDAKCI:
+					break
+				_yardakci_sayac += 1
+				var y := Yardakci.new(_yardakci_sayac, tanim, oyuncular.size() / 4.0, hasar_carpani)
+				yardakcilar.append(y)
+				olaylar.append({"tip": "yardakci_geldi", "no": y.no, "ad": y.ad, "can": y.can,
+					"max_can": y.max_can, "gorunum": y.gorunum})
 
 
 ## Oyuncuya vurur; canından gerçekten giden miktarı döndürür
-func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary]) -> int:
+## kaynak: vuran yardakçı (yoksa boss)
+func _oyuncuya_vur(no: int, miktar: int, olaylar: Array[Dictionary], kaynak: Yardakci = null) -> int:
 	var o := oyuncular[no]
 	var emilen := o.hasar_al(miktar)
 	var olay := _oyuncu_durumu(o)
 	olay["tip"] = "oyuncu_hasar"
 	olay["miktar"] = miktar - emilen
 	olay["emilen"] = emilen
+	if kaynak:
+		olay["kaynak"] = kaynak.no
 	olaylar.append(olay)
 	if not o.hayatta():
 		olaylar.append({"tip": "olum", "oyuncu": o.no, "metin": "%s düştü!" % o.ad})
+	# Diken: vurana geri döner
+	if o.diken > 0 and miktar > 0:
+		olaylar.append({"tip": "boss_durum", "metin": "Diken! %d hasar geri döndü" % o.diken, "durum": boss.durum_metni()})
+		if kaynak:
+			if kaynak.hayatta():
+				_yardakciya_vur(kaynak, o.diken, olaylar)
+		else:
+			_bossa_vur(o.diken, olaylar)
 	return miktar - emilen
+
+
+## Hayattaki yardakçılar sırayla vurur (bu tur çağrılanlar hariç); Meydan Okuma onları da çeker
+func _yardakci_saldirilari(olaylar: Array[Dictionary]) -> void:
+	if boss.sersem:
+		return
+	for y in yardakcilar.duplicate():
+		if y.yeni or not y.hayatta() or boss.can <= 0:
+			continue
+		var canlilar := canli_oyuncular()
+		if canlilar.is_empty():
+			return
+		var hedef: Oyuncu = canlilar[rng.randi_range(0, canlilar.size() - 1)]
+		if aggro >= 0 and oyuncular[aggro].hayatta():
+			hedef = oyuncular[aggro]
+		olaylar.append({"tip": "yardakci_saldiri", "no": y.no, "metin": "%s -> %s (%d hasar)" % [y.ad, hedef.ad, y.hasar]})
+		_oyuncuya_vur(hedef.no, maxi(0, y.hasar - boss.zayiflik), olaylar, y)
 
 
 # --- Tur başlangıcı ve boss niyeti -----------------------------------------
@@ -405,10 +559,14 @@ func _tur_baslat() -> void:
 		boss.guc += boss.guc_artisi
 	for o in oyuncular:
 		o.zirh = 0
+		o.diken = 0
 		o.mana = mini(tur, MAKS_MANA) + o.sonraki_mana
 		o.sonraki_mana = 0
 		if o.hayatta():
-			o.kart_cek(el_boyutu - o.el.size())
+			o.kart_cek(mini(el_boyutu - o.el.size() + o.sonraki_kart, MAKS_EL - o.el.size()))
+		o.sonraki_kart = 0
+	for y in yardakcilar:
+		y.yeni = false
 	if tilsimlar.has("avci_pusulasi"):
 		boss.isaret += 2
 	if tilsimlar.has("ejder_pulu"):
@@ -432,6 +590,8 @@ func _niyet_belirle() -> void:
 	var toplam := 0
 	for h in boss.hamleler:
 		if tur == 1 and h.get("ilk_tur_yok", false):
+			continue
+		if h["tur"] == "cagir" and yardakcilar.size() >= MAKS_YARDAKCI:
 			continue
 		adaylar.append(h)
 		toplam += int(h["agirlik"])
@@ -477,6 +637,10 @@ func _niyet_belirle() -> void:
 		"iyiles":
 			n["miktar"] = int(secilen["miktar"])
 			n["metin"] = "%s (+%d can)" % [ad, n["miktar"]]
+		"cagir":
+			n["yardakci"] = secilen["yardakci"]
+			n["adet"] = mini(int(secilen["adet"]), MAKS_YARDAKCI - yardakcilar.size())
+			n["metin"] = "%s (%d %s çağırır)" % [ad, n["adet"], Dusmanlar.yardakci(secilen["yardakci"])["ad"]]
 	boss.niyet = n
 
 
@@ -491,6 +655,10 @@ func _oyuncu_olayi(olaylar: Array[Dictionary], tip: String, o: Oyuncu, miktar: i
 	olay["tip"] = tip
 	olay["miktar"] = miktar
 	olaylar.append(olay)
+
+
+func _oyuncu_yazisi(olaylar: Array[Dictionary], o: Oyuncu, metin: String, renk: String) -> void:
+	olaylar.append({"tip": "oyuncu_yazi", "oyuncu": o.no, "metin": metin, "renk": renk})
 
 
 func _boss_durum_olayi(olaylar: Array[Dictionary], metin: String) -> void:

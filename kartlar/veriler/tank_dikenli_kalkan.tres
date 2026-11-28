@@ -6,12 +6,12 @@
 script = ExtResource("1_card")
 id = &"tank_dikenli_kalkan"
 kart_adi = "Dikenli Kalkan"
-aciklama = "{deger} zırh kazanır ve boss'a {ek} hasar verir."
+aciklama = "Bu tur sana vuran her düşman {deger} hasar alır; {ek} zırh kazanırsın."
 mana = 2
 sinif = 0
 tip = 0
 hedef = 2
-etki = 2
-deger = 8
-ek_etki = 5
-ek_deger = 5
+etki = 15
+deger = 6
+ek_etki = 1
+ek_deger = 6

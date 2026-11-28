@@ -17,6 +17,7 @@ func _initialize() -> void:
 		push_error("TEST HATASI: kartlar eksik yüklendi")
 
 	_yeni_mekanik_testi(havuz)
+	_yardakci_testi(havuz)
 	_rapor("rastgele takım", havuz, 0)
 	_rapor("4 bot", havuz, 4)
 	_rapor("1 rastgele + 3 bot", havuz, 3)
@@ -224,3 +225,65 @@ func _yeni_mekanik_testi(havuz: Dictionary) -> void:
 	if once - m2.boss.can != 10 + savurus.deger:
 		push_error("TEST HATASI: Kalkan Savuruşu %d hasar verdi" % (once - m2.boss.can))
 	print("TEST: yeni mekanikler (zehir, gelecek tur mana, zırh kadar hasar) çalışıyor")
+
+
+func _kart(havuz: Dictionary, id: StringName) -> CardData:
+	for s in havuz:
+		for k in havuz[s]:
+			if k.id == id:
+				return k.duplicate()
+	push_error("TEST HATASI: kart yok: %s" % id)
+	return null
+
+
+func _oynat(m: SavasMotoru, no: int, kart: CardData, hedef := -1) -> void:
+	var o := m.oyuncular[no]
+	o.el.append(kart)
+	o.mana = 10
+	if not m.kart_sec(no, kart, hedef):
+		push_error("TEST HATASI: %s seçilemedi" % kart.kart_adi)
+
+
+## Yardakçı çağırma, siper kuralı, alan hasarı, diken, diriltme
+func _yardakci_testi(havuz: Dictionary) -> void:
+	var m := SavasMotoru.new(SavasMotoru.hizli_kurulum(havuz, "goblin_cetesi"))
+	m.boss.niyet = {"tur": "cagir", "yardakci": "goblin", "adet": 2, "metin": "test"}
+	m.turu_coz()
+	if m.yardakcilar.size() != 2:
+		push_error("TEST HATASI: yardakçı çağrılmadı (%d)" % m.yardakcilar.size())
+		return
+	# Tek hedefli vuruş öndeki yardakçıya gider
+	var boss_can := m.boss.can
+	var on_can := m.yardakcilar[0].can
+	m.boss.niyet = {"tur": "guc", "miktar": 0, "metin": "test"}
+	_oynat(m, 2, _kart(havuz, &"hasarci_ates_oku"))
+	m.turu_coz()
+	if m.boss.can != boss_can or m.yardakcilar[0].can >= on_can:
+		push_error("TEST HATASI: siper kuralı çalışmadı (boss %d->%d)" % [boss_can, m.boss.can])
+	# Alan hasarı hepsine vurur
+	var canlar := m.yardakcilar.map(func(y): return y.can)
+	boss_can = m.boss.can
+	m.boss.niyet = {"tur": "guc", "miktar": 0, "metin": "test"}
+	_oynat(m, 0, _kart(havuz, &"tank_girdap"))
+	m.turu_coz()
+	if m.boss.can >= boss_can:
+		push_error("TEST HATASI: alan hasarı bossa işlemedi")
+	for i in m.yardakcilar.size():
+		if m.yardakcilar[i].can >= canlar[i]:
+			push_error("TEST HATASI: alan hasarı yardakçıya işlemedi")
+	# Diken: bossun tekil vuruşu geri döner
+	var m2 := SavasMotoru.new(SavasMotoru.hizli_kurulum(havuz, "ork_savas_beyi"))
+	m2.boss.niyet = {"tur": "tekil", "hedef": 0, "hasar": 10, "metin": "test"}
+	boss_can = m2.boss.can
+	_oynat(m2, 0, _kart(havuz, &"tank_dikenli_kalkan"))
+	m2.turu_coz()
+	if boss_can - m2.boss.can != 6:
+		push_error("TEST HATASI: diken %d hasar verdi" % (boss_can - m2.boss.can))
+	# Diriltme
+	m2.oyuncular[3].can = 0
+	m2.boss.niyet = {"tur": "guc", "miktar": 0, "metin": "test"}
+	_oynat(m2, 1, _kart(havuz, &"destek_dirilis_isigi"))
+	m2.turu_coz()
+	if not m2.oyuncular[3].hayatta():
+		push_error("TEST HATASI: diriltme çalışmadı")
+	print("TEST: yardakçılar (çağırma, siper, alan hasarı), diken ve diriltme çalışıyor")
