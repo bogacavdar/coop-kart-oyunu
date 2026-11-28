@@ -33,13 +33,14 @@ static func boss_id(bolum: int) -> String:
 static func tanim(id: String) -> Dictionary:
 	match id:
 		"tas_golem":
-			return {"id": id, "ad": "Taş Golem", "tip": "normal", "can": 36, "guc_artisi": 1,
+			return {"id": id, "ad": "Ateş İblisi", "tip": "normal", "can": 36, "guc_artisi": 1,
 				"hamleler": [
-					{"tur": "tekil", "ad": "Kaya Yumruğu", "hasar": 29, "agirlik": 50},
-					{"tur": "alan", "ad": "Deprem", "hasar": 14, "agirlik": 30},
-					{"tur": "kalkan", "ad": "Taş Kabuk", "miktar": 16, "agirlik": 20},
+					{"tur": "tekil", "ad": "Alev Yumruğu", "hasar": 29, "agirlik": 50},
+					{"tur": "alan", "ad": "Ateş Dalgası", "hasar": 14, "agirlik": 30},
+					{"tur": "kalkan", "ad": "Kor Zırh", "miktar": 16, "agirlik": 20},
 				],
-				"gorunum": {"sekil": "golem", "renk": "#55545c", "goz": "#6fd0ff", "yaricap": 74.0}}
+				"gorunum": {"sekil": "golem", "renk": "#8a3a30", "goz": "#ffb040", "yaricap": 74.0,
+					"model": {"dosya": "res://varliklar/modeller/quaternius/Big/Demon.gltf", "saldiri": "Punch", "vurulma": "HitReact", "olum": "Death", "bekleme": "Idle", "olcek": 1.05}}}
 		"goblin_cetesi":
 			return {"id": id, "ad": "Goblin Çetesi", "tip": "normal", "can": 38, "guc_artisi": 1,
 				"hamleler": [
