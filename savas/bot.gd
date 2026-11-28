@@ -149,7 +149,7 @@ static func _beklenen_zirh(motor: SavasMotoru, o: Oyuncu) -> int:
 			var k: CardData = s["kart"]
 			if k.tip != CardData.Tip.KORUMA:
 				continue
-			var bana := k.hedef == CardData.Hedef.TUM_TAKIM \
+			var bana: bool = k.hedef == CardData.Hedef.TUM_TAKIM \
 				or (k.hedef == CardData.Hedef.KENDISI and d == o) \
 				or (k.hedef == CardData.Hedef.MUTTEFIK and s["hedef"] == o.no)
 			if bana and k.etki in [CardData.Etki.ZIRH, CardData.Etki.AGGRO]:
