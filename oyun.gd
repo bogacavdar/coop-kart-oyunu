@@ -29,6 +29,18 @@ func _ready() -> void:
 		_ekrani_degistir(s)
 		s.baslat(SavasMotoru.hizli_kurulum(havuz, dusman), CardData.Sinif.HASARCI)
 		return
+	if onizleme.begins_with("yardakci:"):
+		# yardakci:<düşman>  -> boss ilk tur yardakçılarını çağırır, ikinci tur görünür
+		var dusman := onizleme.substr(9)
+		Masa.tema = 2 if Dusmanlar.NORMAL_2.has(dusman) or Dusmanlar.ELIT_2.has(dusman) or dusman == Dusmanlar.BOSS_2 else 1
+		var s := SavasEkrani.new()
+		_ekrani_degistir(s)
+		s.baslat(SavasMotoru.hizli_kurulum(havuz, dusman), CardData.Sinif.HASARCI)
+		for h in s.motor.boss.hamleler:
+			if h["tur"] == "cagir":
+				s.motor.boss.niyet = {"tur": "cagir", "yardakci": h["yardakci"], "adet": 3, "metin": h["ad"]}
+		s.otomatik_adim()
+		return
 	if onizleme.begins_with("kartlar:"):
 		# kartlar:<sınıf no>  -> o sınıf yalnızca ödül kartlarından oluşan desteyle savaşır
 		var sinif := int(onizleme.substr(8))
