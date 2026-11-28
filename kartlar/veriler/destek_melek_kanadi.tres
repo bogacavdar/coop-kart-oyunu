@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"destek_melek_kanadi"
+kart_adi = "Melek Kanadı"
+aciklama = "Bir müttefike {deger} zırh, takıma {ek} can."
+mana = 3
+sinif = 1
+tip = 0
+hedef = 1
+etki = 2
+deger = 12
+ek_etki = 4
+ek_deger = 2

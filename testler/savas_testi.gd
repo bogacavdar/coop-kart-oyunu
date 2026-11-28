@@ -13,9 +13,10 @@ func _initialize() -> void:
 	for s in havuz:
 		kart_sayisi += havuz[s].size()
 	print("TEST: %d kart, %d sınıf yüklendi" % [kart_sayisi, havuz.size()])
-	if kart_sayisi < 48 or havuz.size() < 4:
+	if kart_sayisi < 80 or havuz.size() < 4:
 		push_error("TEST HATASI: kartlar eksik yüklendi")
 
+	_yeni_mekanik_testi(havuz)
 	_rapor("rastgele takım", havuz, 0)
 	_rapor("4 bot", havuz, 4)
 	_rapor("1 rastgele + 3 bot", havuz, 3)
@@ -191,3 +192,35 @@ func _kayit_testi() -> void:
 			if k.kilitli_idler().has(t):
 				push_error("TEST HATASI: kilitli tılsım çıktı: " + t)
 	print("TEST: kayıt ve kilit testi bitti (%d kilit açık)" % k.deger("acilan"))
+
+
+## Zehir, zırh kadar hasar ve gelecek tur mana kuralları
+func _yeni_mekanik_testi(havuz: Dictionary) -> void:
+	var motor := SavasMotoru.new(SavasMotoru.hizli_kurulum(havuz, "ork_savas_beyi"))
+	motor.boss.sersem = true  # düşman bu tur bir şey yapmasın
+	motor.boss.zehir = 5
+	motor.oyuncular[0].sonraki_mana = 2
+	var once := motor.boss.can
+	motor.turu_coz()
+	if motor.boss.can != once - 5 or motor.boss.zehir != 4:
+		push_error("TEST HATASI: zehir işlemedi (%d -> %d, zehir %d)" % [once, motor.boss.can, motor.boss.zehir])
+	if motor.oyuncular[0].mana != 4 or motor.oyuncular[1].mana != 2:
+		push_error("TEST HATASI: gelecek tur mana yanlış: %d / %d" % [motor.oyuncular[0].mana, motor.oyuncular[1].mana])
+	# Kalkan Savuruşu: zırh + değer kadar hasar
+	var savurus: CardData = null
+	for k in havuz[CardData.Sinif.TANK]:
+		if k.id == &"tank_kalkan_savurusu":
+			savurus = k
+	var m2 := SavasMotoru.new(SavasMotoru.hizli_kurulum(havuz, "ork_savas_beyi"))
+	var o := m2.oyuncular[0]
+	o.zirh = 10
+	m2.boss.zirh = 0
+	var kopya: CardData = savurus.duplicate()
+	o.el.append(kopya)
+	o.mana = 5
+	once = m2.boss.can
+	m2.kart_sec(0, kopya)
+	m2.turu_coz()
+	if once - m2.boss.can != 10 + savurus.deger:
+		push_error("TEST HATASI: Kalkan Savuruşu %d hasar verdi" % (once - m2.boss.can))
+	print("TEST: yeni mekanikler (zehir, gelecek tur mana, zırh kadar hasar) çalışıyor")

@@ -13,6 +13,8 @@ const SOZLUK := {
 	"kalkan": "[color=#9fc8ff]Kalkan[/color]: Düşmanın kalkanı, oyuncuların hasarını önce emer. Düşmanın bir sonraki hamlesinde biter.",
 	"guc": "[color=#ff8a6a]Güç[/color]: Düşmanın bütün saldırılarına eklenir ve kalıcıdır. Savaş uzadıkça artar.",
 	"mana": "[color=#8fc1ff]Mana[/color]: Kart oynamak için harcanır. Her tur 1 artar (en fazla 6). Harcanmayan mana sonraki tura kalmaz.",
+	"zehir": "[color=#8be06a]Zehir[/color]: Kalıcıdır. Her tur sonunda düşman zehir kadar hasar alır (kalkanı deler), sonra zehir 1 azalır. Üst üste yüklenir.",
+	"sonraki_mana": "[color=#8fc1ff]Gelecek tur mana[/color]: Bir sonraki tur manana eklenir; 6 sınırını da aşabilir.",
 	"sira": "[color=#e8c27a]Tur sırası[/color]: Önce Koruma, sonra Kontrol, sonra Saldırı, en son İyileştirme kartları işlenir. Ardından düşman hamlesini yapar.",
 }
 
@@ -103,8 +105,15 @@ static func kart_metni(k: CardData) -> String:
 		CardData.Etki.ZAYIFLAT: terimler.append("zayif")
 		CardData.Etki.SERSEMLET: terimler.append("sersem")
 		CardData.Etki.HASAR: terimler.append("kalkan")
+		CardData.Etki.ZEHIR: terimler.append("zehir")
+		CardData.Etki.ZIRH_HASARI: terimler.append_array(["zirh", "kalkan"])
 	if k.ek_etki in [CardData.EkEtki.KENDINE_ZIRH, CardData.EkEtki.TAKIMA_ZIRH] and not terimler.has("zirh"):
 		terimler.append("zirh")
+	var ek_terim := {CardData.EkEtki.ZEHIR: "zehir", CardData.EkEtki.ISARET: "isaret",
+		CardData.EkEtki.ZAYIFLAT: "zayif", CardData.EkEtki.SONRAKI_MANA: "sonraki_mana",
+		CardData.EkEtki.TAKIMA_MANA: "sonraki_mana"}
+	if ek_terim.has(k.ek_etki) and not terimler.has(ek_terim[k.ek_etki]):
+		terimler.append(ek_terim[k.ek_etki])
 	for t in terimler:
 		satirlar.append(SOZLUK[t])
 	if k.guclendirildi_mi():

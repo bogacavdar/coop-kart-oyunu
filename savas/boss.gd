@@ -17,6 +17,8 @@ var zirh := 0
 var isaret := 0
 var zayiflik := 0
 var sersem := false
+## Kalıcı: her tur sonunda bu kadar hasar alır (kalkanı deler), sonra 1 azalır
+var zehir := 0
 ## Bir önceki tur sersemlediyse bu tur sersemletilemez
 var bagisik := false
 var hamleler: Array = []
@@ -46,6 +48,8 @@ func durum_metni() -> String:
 		parcalar.append("İşaretli +%d" % isaret)
 	if zayiflik > 0:
 		parcalar.append("Zayıf -%d" % zayiflik)
+	if zehir > 0:
+		parcalar.append("Zehir %d" % zehir)
 	if sersem:
 		parcalar.append("Sersem")
 	elif bagisik:

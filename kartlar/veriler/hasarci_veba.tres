@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"hasarci_veba"
+kart_adi = "Veba"
+aciklama = "Düşmana {deger} zehir yükler."
+mana = 5
+sinif = 2
+tip = 1
+hedef = 0
+etki = 7
+deger = 12
+bolum = 2

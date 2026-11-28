@@ -439,8 +439,10 @@ func _olay_oynat(olay: Dictionary) -> void:
 			_boss_can.text = "Can: %d / %d" % [olay["can"], motor.boss.max_can]
 			_boss_durum.text = olay["durum"]
 			_boss.vur()
+			if olay.has("metin"):
+				_log_yaz("[color=#8be06a]%s[/color]" % olay["metin"])
 			Ses.cal(self, "vurus")
-			_ucan_yazi("-%d" % olay["miktar"], Color("#ff5a5a"), BOSS_MERKEZI, 34)
+			_ucan_yazi("-%d" % olay["miktar"], Color("#8be06a") if olay.has("metin") else Color("#ff5a5a"), BOSS_MERKEZI, 34)
 			if olay["emilen"] > 0:
 				_ucan_yazi("%d kalkana çarptı" % olay["emilen"], Color("#9fc8ff"), BOSS_MERKEZI + Vector2(0, 40), 16)
 			await _bekle(0.35)

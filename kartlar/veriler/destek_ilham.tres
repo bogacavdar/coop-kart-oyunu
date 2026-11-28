@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"destek_ilham"
+kart_adi = "İlham"
+aciklama = "Takıma {deger} can, gelecek tur herkese +{ek} mana."
+mana = 3
+sinif = 1
+tip = 3
+hedef = 3
+etki = 1
+deger = 3
+ek_etki = 8
+ek_deger = 1
+bolum = 2

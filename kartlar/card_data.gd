@@ -12,10 +12,15 @@ enum Tip { KORUMA, KONTROL, SALDIRI, IYILESTIRME }
 enum Hedef { BOSS, MUTTEFIK, KENDISI, TUM_TAKIM }
 
 ## Kartın ne yaptığı
-enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET }
+## (Yeni etkiler hep sona eklenir: .tres dosyaları sayıyla kaydeder.)
+## ZEHIR: düşmana zehir yükler; her tur sonunda zehir kadar hasar alır, zehir 1 azalır.
+## ZIRH_HASARI: oynayanın o anki zırhı + deger kadar hasar verir.
+enum Etki { HASAR, IYILESTIRME, ZIRH, AGGRO, ISARET, ZAYIFLAT, SERSEMLET, ZEHIR, ZIRH_HASARI }
 
 ## Ana etkiden sonra uygulanan ikinci etki (isteğe bağlı)
-enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HASAR }
+## SONRAKI_MANA / TAKIMA_MANA: gelecek tur fazladan mana (kendine / bütün takıma)
+enum EkEtki { YOK, KENDINE_ZIRH, TAKIMA_ZIRH, KENDINE_CAN, TAKIMA_CAN, BOSSA_HASAR,
+	ZEHIR, SONRAKI_MANA, TAKIMA_MANA, ISARET, ZAYIFLAT }
 
 @export var id: StringName
 @export var kart_adi: String = "Yeni Kart"

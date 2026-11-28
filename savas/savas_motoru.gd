@@ -181,6 +181,12 @@ func turu_coz() -> Array[Dictionary]:
 		olaylar.append({"tip": "yenilgi"})
 		return olaylar
 
+	_zehir_isle(olaylar)
+	if boss.can <= 0:
+		bitti = true
+		olaylar.append({"tip": "zafer"})
+		return olaylar
+
 	tur += 1
 	_tur_baslat()
 	olaylar.append({"tip": "yeni_tur"})
@@ -200,12 +206,16 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 			_bossa_vur(kart.deger + boss.isaret, olaylar)
 
 		CardData.Etki.ISARET:
-			boss.isaret += kart.deger
-			_boss_durum_olayi(olaylar, "Düşman işaretlendi: saldırılar +%d" % boss.isaret)
+			_isaretle(kart.deger, olaylar)
 
 		CardData.Etki.ZAYIFLAT:
-			boss.zayiflik += kart.deger
-			_boss_durum_olayi(olaylar, "Düşman zayıfladı: hasarı -%d" % boss.zayiflik)
+			_zayiflat(kart.deger, olaylar)
+
+		CardData.Etki.ZEHIR:
+			_zehirle(kart.deger, olaylar)
+
+		CardData.Etki.ZIRH_HASARI:
+			_bossa_vur(o.zirh + kart.deger + boss.isaret, olaylar)
 
 		CardData.Etki.SERSEMLET:
 			if boss.bagisik:
@@ -248,6 +258,45 @@ func _kart_uygula(h: Dictionary, olaylar: Array[Dictionary]) -> void:
 				_oyuncu_olayi(olaylar, "iyilestir", t, t.iyiles(ek))
 		CardData.EkEtki.BOSSA_HASAR:
 			_bossa_vur(ek, olaylar)
+		CardData.EkEtki.ZEHIR:
+			_zehirle(ek, olaylar)
+		CardData.EkEtki.ISARET:
+			_isaretle(ek, olaylar)
+		CardData.EkEtki.ZAYIFLAT:
+			_zayiflat(ek, olaylar)
+		CardData.EkEtki.SONRAKI_MANA:
+			o.sonraki_mana += ek
+			_boss_durum_olayi(olaylar, "%s gelecek tur +%d mana kazanacak" % [o.ad, ek])
+		CardData.EkEtki.TAKIMA_MANA:
+			for t in canli_oyuncular():
+				t.sonraki_mana += ek
+			_boss_durum_olayi(olaylar, "Takım gelecek tur +%d mana kazanacak" % ek)
+
+
+func _isaretle(miktar: int, olaylar: Array[Dictionary]) -> void:
+	boss.isaret += miktar
+	_boss_durum_olayi(olaylar, "Düşman işaretlendi: saldırılar +%d" % boss.isaret)
+
+
+func _zayiflat(miktar: int, olaylar: Array[Dictionary]) -> void:
+	boss.zayiflik += miktar
+	_boss_durum_olayi(olaylar, "Düşman zayıfladı: hasarı -%d" % boss.zayiflik)
+
+
+func _zehirle(miktar: int, olaylar: Array[Dictionary]) -> void:
+	boss.zehir += miktar
+	_boss_durum_olayi(olaylar, "Düşman zehirlendi: zehir %d" % boss.zehir)
+
+
+## Tur sonunda zehir işler: kalkanı deler, sonra 1 azalır
+func _zehir_isle(olaylar: Array[Dictionary]) -> void:
+	if boss.zehir <= 0:
+		return
+	var miktar := mini(boss.zehir, boss.can)
+	boss.can -= miktar
+	boss.zehir -= 1
+	olaylar.append({"tip": "boss_hasar", "miktar": miktar, "emilen": 0, "can": boss.can,
+		"durum": boss.durum_metni(), "metin": "Zehir %s'e %d hasar verdi" % [boss.ad, miktar]})
 
 
 ## Boss'a hasar: önce kalkanı emer
@@ -352,7 +401,8 @@ func _tur_baslat() -> void:
 		boss.guc += boss.guc_artisi
 	for o in oyuncular:
 		o.zirh = 0
-		o.mana = mini(tur, MAKS_MANA)
+		o.mana = mini(tur, MAKS_MANA) + o.sonraki_mana
+		o.sonraki_mana = 0
 		if o.hayatta():
 			o.kart_cek(el_boyutu - o.el.size())
 	if tilsimlar.has("avci_pusulasi"):

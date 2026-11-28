@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"tank_siki_durus"
+kart_adi = "Sıkı Duruş"
+aciklama = "{deger} zırh kazanırsın."
+mana = 0
+sinif = 0
+tip = 0
+hedef = 2
+etki = 2
+deger = 4

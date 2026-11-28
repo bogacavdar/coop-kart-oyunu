@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"tank_savas_narasi"
+kart_adi = "Savaş Narası"
+aciklama = "Düşmanı {deger} işaretler, sen {ek} zırh kazanırsın."
+mana = 1
+sinif = 0
+tip = 1
+hedef = 0
+etki = 4
+deger = 3
+ek_etki = 1
+ek_deger = 4

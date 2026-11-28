@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"destek_mucize"
+kart_adi = "Mucize"
+aciklama = "Bütün takıma {deger} can verir."
+mana = 6
+sinif = 1
+tip = 3
+hedef = 3
+etki = 1
+deger = 20
+bolum = 2

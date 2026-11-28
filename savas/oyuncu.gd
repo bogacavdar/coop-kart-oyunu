@@ -9,6 +9,8 @@ var can: int
 var max_can: int
 var zirh := 0
 var mana := 0
+## Gelecek tur fazladan gelecek mana (kartlardan)
+var sonraki_mana := 0
 var deste: Array[CardData] = []
 var el: Array[CardData] = []
 var atilan: Array[CardData] = []

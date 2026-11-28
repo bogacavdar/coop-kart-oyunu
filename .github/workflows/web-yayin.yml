@@ -39,12 +39,15 @@ jobs:
       - name: Savaş testini çalıştır
         run: timeout 300 godot --headless --script res://testler/savas_testi.gd 2>&1 | tee test.log || true
 
+      - name: Kart denge ölçümünü çalıştır
+        run: timeout 600 godot --headless --script res://testler/denge_testi.gd 2>&1 | tee denge.log || true
+
       - name: Arayüz testini çalıştır
         run: timeout 120 godot --headless --script res://testler/arayuz_testi.gd 2>&1 | tee calistir.log || true
 
       - name: Hataları kontrol et
         run: |
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|TEST HATASI" import.log test.log calistir.log; then
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|TEST HATASI" import.log test.log calistir.log denge.log; then
             echo "Kodda hata bulundu"; exit 1
           fi
           grep -q "TEST TAMAM" test.log || { echo "Test tamamlanmadı"; exit 1; }

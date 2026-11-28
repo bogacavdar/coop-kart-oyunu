@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"destek_kutsal_yargi"
+kart_adi = "Kutsal Yargı"
+aciklama = "Düşmanın bu turki hasarını {deger} azaltır, takıma {ek} can."
+mana = 3
+sinif = 1
+tip = 1
+hedef = 0
+etki = 5
+deger = 6
+ek_etki = 4
+ek_deger = 3

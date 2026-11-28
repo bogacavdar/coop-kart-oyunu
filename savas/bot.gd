@@ -49,6 +49,12 @@ static func _degerlendir(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> Array
 		CardData.Etki.HASAR:
 			return [float(kart.deger), -1]
 
+		CardData.Etki.ZEHIR:
+			return [_zehir_degeri(motor, kart.deger), -1]
+
+		CardData.Etki.ZIRH_HASARI:
+			return [float(_beklenen_zirh(motor, o) + kart.deger), -1]
+
 		CardData.Etki.ISARET:
 			# Takımda genelde 2-3 saldırı kartı oynanır
 			return [kart.deger * 2.0, -1]
@@ -113,4 +119,43 @@ static func _ek_puan(motor: SavasMotoru, o: Oyuncu, kart: CardData) -> float:
 			return float(toplam)
 		CardData.EkEtki.BOSSA_HASAR:
 			return float(ek)
+		CardData.EkEtki.ZEHIR:
+			return _zehir_degeri(motor, ek)
+		CardData.EkEtki.ISARET:
+			return ek * 1.5
+		CardData.EkEtki.ZAYIFLAT:
+			var niyet_hasar: int = motor.boss.niyet.get("hasar", 0)
+			return float(mini(ek, niyet_hasar)) * 1.5
+		CardData.EkEtki.SONRAKI_MANA:
+			return ek * 4.0
+		CardData.EkEtki.TAKIMA_MANA:
+			return ek * 3.5 * motor.canli_oyuncular().size()
 	return 0.0
+
+
+## Eklenen zehrin savaş boyunca kabaca vereceği toplam hasar
+static func _zehir_degeri(motor: SavasMotoru, miktar: int) -> float:
+	var simdiki := motor.boss.zehir
+	# Düşmanın kalan canı zehri boşa çıkarabilir
+	var kalan_tur := clampf(motor.boss.can / 25.0, 1.0, 5.0)
+	return miktar * minf(simdiki + miktar, kalan_tur) * 0.6
+
+
+## Bu tur, saldırılar işlenmeden önce oyuncunun sahip olacağı zırh
+static func _beklenen_zirh(motor: SavasMotoru, o: Oyuncu) -> int:
+	var toplam := o.zirh
+	for d in motor.oyuncular:
+		for s in d.secimler:
+			var k: CardData = s["kart"]
+			if k.tip != CardData.Tip.KORUMA:
+				continue
+			var bana := k.hedef == CardData.Hedef.TUM_TAKIM \
+				or (k.hedef == CardData.Hedef.KENDISI and d == o) \
+				or (k.hedef == CardData.Hedef.MUTTEFIK and s["hedef"] == o.no)
+			if bana and k.etki in [CardData.Etki.ZIRH, CardData.Etki.AGGRO]:
+				toplam += k.deger
+			if d == o and k.ek_etki == CardData.EkEtki.KENDINE_ZIRH:
+				toplam += k.ek_deger
+			if k.ek_etki == CardData.EkEtki.TAKIMA_ZIRH:
+				toplam += k.ek_deger
+	return toplam

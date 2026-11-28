@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://kartlar/card_data.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"tank_son_siper"
+kart_adi = "Son Siper"
+aciklama = "Düşmanın dikkatini çekersin ve {deger} zırh kazanırsın."
+mana = 6
+sinif = 0
+tip = 0
+hedef = 2
+etki = 3
+deger = 24
+bolum = 2
