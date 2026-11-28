@@ -29,6 +29,10 @@ var hasar_carpani := 1.0
 ## kurulum: {"oyuncular": [{"sinif", "can", "max_can", "deste"}], "dusman": "id"}
 func _init(kurulum: Dictionary) -> void:
 	rng.randomize()
+	# Testler aynı zarlarla karşılaştırma yapabilsin diye isteğe bağlı tohum
+	if kurulum.has("tohum"):
+		rng.seed = int(kurulum["tohum"])
+		seed(int(kurulum["tohum"]))
 	tilsimlar = kurulum.get("tilsimlar", [])
 	kademe = int(kurulum.get("kademe", 0))
 	if kademe >= 2:

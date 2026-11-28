@@ -4,7 +4,7 @@ extends SceneTree
 ## Fark ne kadar büyükse kart o kadar güçlü. Sıralamanın başı ve sonu dengelenmesi gereken kartlardır.
 ## Çalıştırma: godot --headless --script res://testler/denge_testi.gd
 
-const OYUN := 160
+const OYUN := 600
 const DUSMANLAR := ["ork_savas_beyi", "kemik_ejderi"]
 
 
@@ -39,6 +39,7 @@ func _olc(havuz: Dictionary, kart: CardData) -> Dictionary:
 	var can := 0
 	for i in OYUN:
 		var kurulum := SavasMotoru.hizli_kurulum(havuz, DUSMANLAR[i % DUSMANLAR.size()])
+		kurulum["tohum"] = 1000 + i  # kartlı ve kartsız takım aynı zarlarla oynar
 		if kart:
 			for v in kurulum["oyuncular"]:
 				if v["sinif"] == kart.sinif:

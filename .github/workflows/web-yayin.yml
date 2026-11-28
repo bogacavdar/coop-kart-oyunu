@@ -40,7 +40,7 @@ jobs:
         run: timeout 300 godot --headless --script res://testler/savas_testi.gd 2>&1 | tee test.log || true
 
       - name: Kart denge ölçümünü çalıştır
-        run: timeout 600 godot --headless --script res://testler/denge_testi.gd 2>&1 | tee denge.log || true
+        run: timeout 900 godot --headless --script res://testler/denge_testi.gd 2>&1 | tee denge.log || true
 
       - name: Arayüz testini çalıştır
         run: timeout 120 godot --headless --script res://testler/arayuz_testi.gd 2>&1 | tee calistir.log || true
