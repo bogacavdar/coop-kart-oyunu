@@ -11,6 +11,9 @@ var model: Model3D
 var _bar: ProgressBar
 var _yazi: Label
 var _on_isareti: Label
+var _on := false
+var _can := 0
+var _max_can := 0
 
 
 func _init(p_no: int, p_ad: String, can: int, max_can: int, gorunum: Dictionary, p_hasar: int) -> void:
@@ -85,13 +88,21 @@ func merkez() -> Vector2:
 
 
 func on_mu(acik: bool) -> void:
-	_on_isareti.visible = acik
+	_on = acik
+	_yazi_guncelle()
 
 
 func guncelle(can: int, max_can: int) -> void:
 	_bar.max_value = max_can
 	_bar.value = can
-	_yazi.text = "%s  %d/%d" % [ad, can, max_can]
+	_can = can
+	_max_can = max_can
+	_yazi_guncelle()
+
+
+func _yazi_guncelle() -> void:
+	_yazi.text = ("SİPER · " if _on else "") + "%s  %d/%d" % [ad, _can, _max_can]
+	_yazi.add_theme_color_override("font_color", Color("#ffb347") if _on else Color("#f0d9a8"))
 
 
 func belir() -> void:

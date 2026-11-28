@@ -13,7 +13,7 @@ const KOLTUK_MERKEZLERI: Array[Vector2] = [
 	Vector2(498, 520), Vector2(150, 285), Vector2(640, 54), Vector2(1130, 285),
 ]
 ## Yardakçıların duracağı yerler (bossun iki yanı ve sol üstü)
-const YARDAKCI_YERLERI: Array[Vector2] = [Vector2(415, 318), Vector2(865, 336), Vector2(415, 168)]
+const YARDAKCI_YERLERI: Array[Vector2] = [Vector2(415, 318), Vector2(880, 392), Vector2(415, 150)]
 const EL_Y := 668.0
 const EL_ARALIK := 132.0
 const EL_OLCEK := 0.72
