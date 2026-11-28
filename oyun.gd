@@ -29,6 +29,21 @@ func _ready() -> void:
 		_ekrani_degistir(s)
 		s.baslat(SavasMotoru.hizli_kurulum(havuz, dusman), CardData.Sinif.HASARCI)
 		return
+	if onizleme.begins_with("kartlar:"):
+		# kartlar:<sınıf no>  -> o sınıf yalnızca ödül kartlarından oluşan desteyle savaşır
+		var sinif := int(onizleme.substr(8))
+		var kurulum := SavasMotoru.hizli_kurulum(havuz, "ork_savas_beyi")
+		for v in kurulum["oyuncular"]:
+			if v["sinif"] == sinif:
+				var deste: Array[CardData] = []
+				for k in havuz[sinif]:
+					if not k.baslangic:
+						deste.append(k)
+				v["deste"] = deste
+		var s := SavasEkrani.new()
+		_ekrani_degistir(s)
+		s.baslat(kurulum, sinif)
+		return
 	_sinif_secimi_goster()
 
 
